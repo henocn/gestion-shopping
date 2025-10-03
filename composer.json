@@ -1,0 +1,9 @@
+{
+    "name": "root/gestion-shopping",
+    "autoload": {
+        "psr-4": {
+            "src\\": "src/"
+        }
+    },
+    "require": {}
+}

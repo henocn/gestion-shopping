@@ -1,0 +1,306 @@
+/* Styles personnalisés pour le système de gestion shopping */
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 15px;
+}
+
+/* Cartes du tableau de bord */
+.dashboard-card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Bordures colorées pour les cartes */
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 4px solid var(--success-color) !important;
+}
+
+.border-left-info {
+    border-left: 4px solid var(--info-color) !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid var(--warning-color) !important;
+}
+
+/* Icônes des statistiques */
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+/* Sidebar */
+.sidebar {
+    background: var(--primary-gradient);
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    margin: 5px 0;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateX(5px);
+}
+
+.sidebar .nav-link i {
+    margin-right: 8px;
+    width: 20px;
+}
+
+/* Conteneurs de graphiques */
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin: 20px 0;
+}
+
+/* Badges personnalisés pour les statuts */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-new { background-color: var(--info-color); color: white; }
+.status-processing { background-color: #007bff; color: white; }
+.status-deliver { background-color: var(--success-color); color: white; }
+.status-canceled { background-color: var(--danger-color); color: white; }
+.status-unreachable { background-color: var(--warning-color); color: black; }
+.status-remind { background-color: #6f42c1; color: white; }
+
+/* Classement des assistantes */
+.ranking-badge {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.rank-1 { 
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
+}
+
+.rank-2 { 
+    background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
+    box-shadow: 0 3px 10px rgba(192, 192, 192, 0.4);
+}
+
+.rank-3 { 
+    background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
+    box-shadow: 0 3px 10px rgba(205, 127, 50, 0.4);
+}
+
+.rank-other { 
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+}
+
+/* Tables responsives améliorées */
+.table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.table thead th {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    font-weight: 600;
+    padding: 15px;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Filtres et formulaires */
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        width: 250px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .stat-icon {
+        font-size: 1.8rem;
+    }
+}
+
+/* Indicateurs de performance */
+.performance-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 5px;
+}
+
+.performance-excellent { background-color: var(--success-color); }
+.performance-good { background-color: var(--info-color); }
+.performance-average { background-color: var(--warning-color); }
+.performance-poor { background-color: var(--danger-color); }
+
+/* Progress bars personnalisées */
+.progress {
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+.progress-bar {
+    background: var(--primary-gradient);
+    border-radius: 10px;
+}
+
+/* Loader */
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Cartes spécifiques au module financier */
+.finance-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.finance-card.revenue {
+    border-left: 4px solid #4e73df !important;
+}
+
+.finance-card.costs {
+    border-left: 4px solid #e74a3b !important;
+}
+
+.finance-card.profit {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.finance-card.margin {
+    border-left: 4px solid #36b9cc !important;
+}
+
+.finance-card::after {
+    content: "";
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+.mini-stat-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 18px;
+    height: 100%;
+}
+
+.mini-stat-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6c757d;
+    letter-spacing: 0.5px;
+}
+
+.mini-stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0;
+    color: #2c3e50;
+}
