@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:3306
--- Généré le : ven. 03 oct. 2025 à 13:01
+-- Généré le : ven. 03 oct. 2025 à 15:46
 -- Version du serveur : 8.0.43-0ubuntu0.22.04.2
 -- Version de PHP : 8.1.33
 
@@ -100,13 +100,13 @@ INSERT INTO `advertising_campaigns` (`id`, `campaign_name`, `platform`, `start_d
 CREATE TABLE `assistant_profitability` (
 `assistant_id` int
 ,`assistant_name` varchar(64)
-,`delivered_orders` bigint
-,`gross_profit` decimal(43,2)
 ,`month` varchar(7)
-,`net_profit` decimal(44,2)
-,`product_costs` decimal(42,2)
-,`salary_cost` decimal(10,2)
+,`delivered_orders` bigint
 ,`total_revenue` decimal(32,0)
+,`product_costs` decimal(42,2)
+,`gross_profit` decimal(43,2)
+,`salary_cost` decimal(10,2)
+,`net_profit` decimal(44,2)
 );
 
 -- --------------------------------------------------------
@@ -166,12 +166,12 @@ INSERT INTO `monthly_budgets` (`id`, `month`, `budget_category`, `allocated_amou
 -- (Voir ci-dessous la vue réelle)
 --
 CREATE TABLE `monthly_financial_report` (
-`delivered_orders` bigint
-,`gross_profit` decimal(44,2)
-,`month` varchar(7)
-,`total_delivery_costs` decimal(32,2)
-,`total_product_costs` decimal(42,2)
+`month` varchar(7)
+,`delivered_orders` bigint
 ,`total_revenue` decimal(32,0)
+,`total_product_costs` decimal(42,2)
+,`total_delivery_costs` decimal(32,2)
+,`gross_profit` decimal(44,2)
 );
 
 -- --------------------------------------------------------
@@ -328,6 +328,23 @@ CREATE TABLE `order_campaign_tracking` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `order_cost_snapshots`
+--
+
+CREATE TABLE `order_cost_snapshots` (
+  `id` int NOT NULL,
+  `order_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `quantity` int NOT NULL,
+  `unit_purchase_price_at_sale` decimal(10,2) NOT NULL COMMENT 'Prix d''achat unitaire au moment de la vente',
+  `total_purchase_cost_at_sale` decimal(12,2) NOT NULL COMMENT 'Coût d''achat total au moment de la vente',
+  `delivery_cost_at_sale` decimal(10,2) DEFAULT NULL COMMENT 'Coût de livraison associé (si applicable)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Snapshot des coûts pour chaque commande au moment de la vente';
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `order_delivery_costs`
 --
 
@@ -441,6 +458,20 @@ INSERT INTO `product_current_costs` (`id`, `product_id`, `current_purchase_price
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `product_images`
+--
+
+CREATE TABLE `product_images` (
+  `id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_main` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 si c''est l''image principale',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Galerie d''images des produits';
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `product_packs`
 --
 
@@ -474,10 +505,10 @@ INSERT INTO `product_packs` (`id`, `product_id`, `titre`, `image`, `quantity`, `
 CREATE TABLE `product_profitability` (
 `id` int
 ,`name` varchar(128)
-,`profit_margin_percent` decimal(17,2)
-,`purchase_price` decimal(10,2)
 ,`selling_price` int
+,`purchase_price` decimal(10,2)
 ,`unit_profit` decimal(13,2)
+,`profit_margin_percent` decimal(17,2)
 );
 
 -- --------------------------------------------------------
@@ -509,6 +540,20 @@ INSERT INTO `product_purchase_history` (`id`, `product_id`, `purchase_price`, `q
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `product_stock`
+--
+
+CREATE TABLE `product_stock` (
+  `id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `quantity` int NOT NULL DEFAULT '0' COMMENT 'Quantité actuelle en stock',
+  `low_stock_threshold` int NOT NULL DEFAULT '10' COMMENT 'Seuil pour l''alerte de stock bas',
+  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Stock actuel des produits';
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `product_video`
 --
 
@@ -526,6 +571,23 @@ CREATE TABLE `product_video` (
 INSERT INTO `product_video` (`id`, `product_id`, `video_url`, `texte`) VALUES
 (2, 11, '1757350447_pharma.mp4', 'Nous vous tromper pas ce produit est fais pour vous!'),
 (4, 10, '1757602052_WhatsApp Video 2025-08-31 at 11.54.51.mp4', 'plus que sa');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `stock_movements`
+--
+
+CREATE TABLE `stock_movements` (
+  `id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `order_id` int DEFAULT NULL COMMENT 'Lié à une commande si c''est une sortie',
+  `purchase_id` int DEFAULT NULL COMMENT 'Lié à un achat si c''est une entrée',
+  `movement_type` enum('in','out','adjustment') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` int NOT NULL COMMENT 'Quantité du mouvement (positive pour in, négative pour out)',
+  `reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Raison du mouvement (ex: vente, achat, retour, perte)',
+  `movement_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Historique des mouvements de stock';
 
 -- --------------------------------------------------------
 
@@ -644,6 +706,14 @@ ALTER TABLE `order_campaign_tracking`
   ADD KEY `idx_campaign` (`campaign_id`);
 
 --
+-- Index pour la table `order_cost_snapshots`
+--
+ALTER TABLE `order_cost_snapshots`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_order_cost_snapshot` (`order_id`),
+  ADD KEY `idx_product_snapshot` (`product_id`);
+
+--
 -- Index pour la table `order_delivery_costs`
 --
 ALTER TABLE `order_delivery_costs`
@@ -672,6 +742,13 @@ ALTER TABLE `product_current_costs`
   ADD UNIQUE KEY `unique_product_cost` (`product_id`);
 
 --
+-- Index pour la table `product_images`
+--
+ALTER TABLE `product_images`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_product_image` (`product_id`);
+
+--
 -- Index pour la table `product_packs`
 --
 ALTER TABLE `product_packs`
@@ -687,11 +764,27 @@ ALTER TABLE `product_purchase_history`
   ADD KEY `idx_purchase_date` (`purchase_date`);
 
 --
+-- Index pour la table `product_stock`
+--
+ALTER TABLE `product_stock`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_product_stock` (`product_id`);
+
+--
 -- Index pour la table `product_video`
 --
 ALTER TABLE `product_video`
   ADD PRIMARY KEY (`id`),
   ADD KEY `product_id` (`product_id`);
+
+--
+-- Index pour la table `stock_movements`
+--
+ALTER TABLE `stock_movements`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_product_movement` (`product_id`),
+  ADD KEY `idx_order_id` (`order_id`),
+  ADD KEY `idx_purchase_id` (`purchase_id`);
 
 --
 -- Index pour la table `users`
@@ -746,6 +839,12 @@ ALTER TABLE `order_campaign_tracking`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `order_cost_snapshots`
+--
+ALTER TABLE `order_cost_snapshots`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `order_delivery_costs`
 --
 ALTER TABLE `order_delivery_costs`
@@ -770,6 +869,12 @@ ALTER TABLE `product_current_costs`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
+-- AUTO_INCREMENT pour la table `product_images`
+--
+ALTER TABLE `product_images`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `product_packs`
 --
 ALTER TABLE `product_packs`
@@ -782,10 +887,22 @@ ALTER TABLE `product_purchase_history`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT pour la table `product_stock`
+--
+ALTER TABLE `product_stock`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `product_video`
 --
 ALTER TABLE `product_video`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT pour la table `stock_movements`
+--
+ALTER TABLE `stock_movements`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `users`
@@ -811,6 +928,13 @@ ALTER TABLE `order_campaign_tracking`
   ADD CONSTRAINT `order_campaign_tracking_ibfk_2` FOREIGN KEY (`campaign_id`) REFERENCES `advertising_campaigns` (`id`) ON DELETE CASCADE;
 
 --
+-- Contraintes pour la table `order_cost_snapshots`
+--
+ALTER TABLE `order_cost_snapshots`
+  ADD CONSTRAINT `order_cost_snapshots_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_cost_snapshots_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
+
+--
 -- Contraintes pour la table `order_delivery_costs`
 --
 ALTER TABLE `order_delivery_costs`
@@ -829,6 +953,12 @@ ALTER TABLE `product_current_costs`
   ADD CONSTRAINT `product_current_costs_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
+-- Contraintes pour la table `product_images`
+--
+ALTER TABLE `product_images`
+  ADD CONSTRAINT `product_images_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
+
+--
 -- Contraintes pour la table `product_packs`
 --
 ALTER TABLE `product_packs`
@@ -841,10 +971,24 @@ ALTER TABLE `product_purchase_history`
   ADD CONSTRAINT `product_purchase_history_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
+-- Contraintes pour la table `product_stock`
+--
+ALTER TABLE `product_stock`
+  ADD CONSTRAINT `product_stock_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
+
+--
 -- Contraintes pour la table `product_video`
 --
 ALTER TABLE `product_video`
   ADD CONSTRAINT `product_mentions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `stock_movements`
+--
+ALTER TABLE `stock_movements`
+  ADD CONSTRAINT `stock_movements_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `stock_movements_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `stock_movements_ibfk_3` FOREIGN KEY (`purchase_id`) REFERENCES `product_purchase_history` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
