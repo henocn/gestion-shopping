@@ -1,9 +1,15 @@
 {
-    "name": "root/gestion-shopping",
+    "name": "henoc/gestion-shopping",
     "autoload": {
         "psr-4": {
             "src\\": "src/"
         }
     },
+    "authors": [
+        {
+            "name": "Henoc N'GASAMA",
+            "email": "ngasamah@gmail.com"
+        }
+    ],
     "require": {}
 }
