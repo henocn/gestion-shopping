@@ -1,24 +1,30 @@
 <?php
 require_once 'vendor/autoload.php';
+require_once 'src/Connectdb.php';
 
-use src\Stat;
-use src\Product;
-use src\Assistant;
-use src\Finance;
+use Src\ProductManager;
+use Src\FinanceManager;
+use Src\AnalyticsManager;
 
-$stat = new Stat();
-$product = new Product();
-$assistant = new Assistant();
-$finance = new Finance();
+// Initialiser la connexion à la base de données
+try {
+    $db = new \Src\Connectdb();
+    $pdo = $db->getConnection();
+} catch (\PDOException $e) {
+    die("Erreur de connexion à la base de données : " . $e->getMessage());
+}
 
-// Traitement des filtres
+// Instancier les nouveaux managers
+$productManager = new ProductManager($pdo);
+$financeManager = new FinanceManager($pdo);
+$analyticsManager = new AnalyticsManager($pdo);
+
+// Traitement des filtres de date (inchangé)
 $period = $_GET['period'] ?? 'month';
 $dateFrom = $_GET['date_from'] ?? null;
 $dateTo = $_GET['date_to'] ?? null;
 
-// Si les dates ne sont pas définies, utiliser la période sélectionnée
 if ($period == 'custom' && $dateFrom && $dateTo) {
-    // Pour les dates personnalisées, ajouter l'heure
     $dateFrom .= ' 00:00:00';
     $dateTo .= ' 23:59:59';
 } elseif ($period != 'custom') {
@@ -32,6 +38,7 @@ if ($period == 'custom' && $dateFrom && $dateTo) {
             $dateTo = date('Y-m-d 23:59:59', strtotime('sunday this week'));
             break;
         case 'month':
+        default:
             $dateFrom = date('Y-m-01 00:00:00');
             $dateTo = date('Y-m-t 23:59:59');
             break;
@@ -43,29 +50,34 @@ if ($period == 'custom' && $dateFrom && $dateTo) {
             $dateFrom = date('Y-m-01 00:00:00', strtotime('-2 months'));
             $dateTo = date('Y-m-t 23:59:59');
             break;
-        default:
-            $dateFrom = date('Y-m-01 00:00:00');
-            $dateTo = date('Y-m-t 23:59:59');
-            break;
     }
 }
 
-// Obtenir les statistiques
-$globalStats = $stat->getGlobalSalesStats($dateFrom, $dateTo);
-$topProducts = $product->getTopSellingProducts(10, $dateFrom, $dateTo);
-$helperStats = $stat->getHelperSalesStats(null, $period, $dateFrom, $dateTo);
-$salesEvolution = $stat->getSalesEvolution('day', 30);
-$orderStatusStats = $stat->getOrderStatusStats($dateFrom, $dateTo);
-$topCountries = $stat->getTopCountries(5, $dateFrom, $dateTo);
-$profitAnalysis = $stat->getProfitAnalysis($dateFrom, $dateTo);
-$assistantRanking = $assistant->getAssistantRanking($period);
-$lowStock = $finance->getLowStockAlerts(5);
+// Extraire le mois et l'année pour la procédure stockée
+$summaryDate = new DateTime($dateFrom);
+$summaryMonth = $summaryDate->format('n');
+$summaryYear = $summaryDate->format('Y');
 
 
+// Obtenir les statistiques avec les nouvelles classes
+$globalStats = $analyticsManager->getGlobalSalesStats($dateFrom, $dateTo);
+$topProducts = $analyticsManager->getTopSellingProducts(10, $dateFrom, $dateTo);
+$salesEvolution = $analyticsManager->getSalesEvolution(30);
+$orderStatusStats = $analyticsManager->getOrderStatusStats($dateFrom, $dateTo);
+$assistantRanking = $analyticsManager->getAssistantsRanking($dateFrom, $dateTo);
+$lowStock = $productManager->getLowStockAlerts(10);
+
+// Analyse de bénéfices via FinanceManager selon la procédure stockée actuelle (YYYY-MM)
+try {
+    $profitAnalysis = $financeManager->getGlobalProfitability((int)$summaryMonth, (int)$summaryYear);
+} catch (Exception $e) {
+    $profitAnalysis = ['total_revenue' => 0, 'product_costs' => 0, 'delivery_costs' => 0, 'net_profit' => 0, 'profit_margin' => 0];
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,6 +87,7 @@ $lowStock = $finance->getLowStockAlerts(5);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/dashboard.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
     <div class="container-fluid">
         <div class="row">
@@ -87,7 +100,7 @@ $lowStock = $finance->getLowStockAlerts(5);
                     </h4>
                     <small class="text-light">Tableau de Bord</small>
                 </div>
-                
+
                 <div class="nav flex-column">
                     <a class="nav-link active" href="index.php">
                         <i class="fas fa-tachometer-alt"></i> Tableau de Bord
@@ -109,7 +122,7 @@ $lowStock = $finance->getLowStockAlerts(5);
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Tableau de Bord Principal</h1>
-                    
+
                     <!-- Filtres de période -->
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <form method="get" class="d-flex gap-2 align-items-center">
@@ -121,16 +134,16 @@ $lowStock = $finance->getLowStockAlerts(5);
                                 <option value="last_3_months" <?= $period == 'last_3_months' ? 'selected' : '' ?>>3 derniers mois</option>
                                 <option value="custom" <?= $period == 'custom' ? 'selected' : '' ?>>Période personnalisée</option>
                             </select>
-                            
+
                             <div id="custom-dates" style="display: <?= $period == 'custom' ? 'flex' : 'none' ?>;" class="d-flex gap-2">
-                                <input type="date" name="date_from" class="form-control form-control-sm" 
-                                       value="<?= $period == 'custom' ? ($_GET['date_from'] ?? '') : '' ?>" 
-                                       style="width: 140px;">
-                                <input type="date" name="date_to" class="form-control form-control-sm" 
-                                       value="<?= $period == 'custom' ? ($_GET['date_to'] ?? '') : '' ?>" 
-                                       style="width: 140px;">
+                                <input type="date" name="date_from" class="form-control form-control-sm"
+                                    value="<?= $period == 'custom' ? ($_GET['date_from'] ?? '') : '' ?>"
+                                    style="width: 140px;">
+                                <input type="date" name="date_to" class="form-control form-control-sm"
+                                    value="<?= $period == 'custom' ? ($_GET['date_to'] ?? '') : '' ?>"
+                                    style="width: 140px;">
                             </div>
-                            
+
                             <button type="submit" class="btn btn-primary btn-sm">
                                 <i class="fas fa-search"></i> Filtrer
                             </button>
@@ -270,6 +283,7 @@ $lowStock = $finance->getLowStockAlerts(5);
                                                 <tr>
                                                     <th>Produit</th>
                                                     <th class="text-end">Stock</th>
+                                                    <th class="text-end">Seuil</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -277,8 +291,10 @@ $lowStock = $finance->getLowStockAlerts(5);
                                                     <tr>
                                                         <td><?= htmlspecialchars($item['name']) ?></td>
                                                         <td class="text-end">
-                                                            <span class="badge bg-<?= (int)$item['quantity'] <= 0 ? 'secondary' : 'warning' ?>"><?= (int)$item['quantity'] ?></span>
+                                                            <span class="badge bg-<?= (int)$item['quantity'] <= 0 ? 'danger' : 'warning' ?>"><?= (int)$item['quantity'] ?></span>
                                                         </td>
+                                                        <td class="text-end">
+                                                            <span class="badge bg-info"><?= (int)$item['low_stock_threshold'] ?></span>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             </tbody>
@@ -312,11 +328,11 @@ $lowStock = $finance->getLowStockAlerts(5);
                                         </thead>
                                         <tbody>
                                             <?php foreach ($topProducts as $product): ?>
-                                            <tr>
-                                                <td><?= htmlspecialchars($product['name']) ?></td>
-                                                <td><?= $product['total_sold'] ?></td>
-                                                <td><?= number_format($product['total_revenue']) ?> FCFA</td>
-                                            </tr>
+                                                <tr>
+                                                    <td><?= htmlspecialchars($product['name']) ?></td>
+                                                    <td><?= $product['total_sold'] ?></td>
+                                                    <td><?= number_format($product['total_revenue']) ?> FCFA</td>
+                                                </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
@@ -344,12 +360,12 @@ $lowStock = $finance->getLowStockAlerts(5);
                                         </thead>
                                         <tbody>
                                             <?php foreach (array_slice($assistantRanking, 0, 10) as $helper): ?>
-                                            <tr>
-                                                <td><?= htmlspecialchars($helper['name']) ?></td>
-                                                <td><?= $helper['total_orders'] ?></td>
-                                                <td><?= number_format($helper['total_revenue']) ?> FCFA</td>
-                                                <td><?= number_format($helper['conversion_rate'], 1) ?>%</td>
-                                            </tr>
+                                                <tr>
+                                                    <td><?= htmlspecialchars($helper['name']) ?></td>
+                                                    <td><?= $helper['total_orders'] ?></td>
+                                                    <td><?= number_format($helper['total_revenue']) ?> FCFA</td>
+                                                    <td><?= number_format($helper['conversion_rate'], 1) ?>%</td>
+                                                </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
@@ -375,35 +391,35 @@ $lowStock = $finance->getLowStockAlerts(5);
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="text-center">
-                                            <h4 class="text-warning">
-                                                <?php 
-                                                    $totalCosts = (float)($profitAnalysis['product_costs'] ?? 0) + (float)($profitAnalysis['delivery_costs'] ?? 0);
-                                                    echo number_format($totalCosts);
-                                                ?> FCFA
-                                            </h4>
-                                            <p class="small text-muted">Coûts (achat + livraison)</p>
-                                        </div>
+                                        <h4 class="text-warning">
+                                            <?php
+                                            $totalCosts = (float)($profitAnalysis['product_costs'] ?? 0) + (float)($profitAnalysis['delivery_costs'] ?? 0);
+                                            echo number_format($totalCosts);
+                                            ?> FCFA
+                                        </h4>
+                                        <p class="small text-muted">Coûts Totaux (Achat + Dépenses)</p>
+                                        <p class="small text-muted">Coûts (achat + livraison)</p>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="text-center">
-                                            <h4 class="text-primary"><?= number_format($profitAnalysis['net_profit'] ?? 0) ?> FCFA</h4>
-                                            <p class="small text-muted">Bénéfice Net</p>
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h4 class="text-primary"><?= number_format($profitAnalysis['net_profit'] ?? 0) ?> FCFA</h4>
+                                        <p class="small text-muted">Bénéfice Net</p>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="text-center">
-                                            <h4 class="text-info"><?= number_format($profitAnalysis['profit_margin'] ?? 0, 1) ?>%</h4>
-                                            <p class="small text-muted">Marge Bénéficiaire</p>
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h4 class="text-info"><?= number_format($profitAnalysis['profit_margin'] ?? 0, 1) ?>%</h4>
+                                        <p class="small text-muted">Marge Bénéficiaire</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
         </div>
+        </main>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -493,4 +509,5 @@ $lowStock = $finance->getLowStockAlerts(5);
         });
     </script>
 </body>
+
 </html>

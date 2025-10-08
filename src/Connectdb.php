@@ -1,12 +1,15 @@
 <?php
-namespace src;
+
+namespace Src;
 
 use PDO;
 use Exception;
 
-class Connectdb {
+class Connectdb
+{
 
-    private static function connect() {
+    private static function connect()
+    {
         try {
             // Chercher le fichier .env dans le dossier src
             $file = __DIR__ . "/.env";
@@ -28,8 +31,8 @@ class Connectdb {
         }
     }
 
-    public static function getConnection() {
+    public static function getConnection()
+    {
         return self::connect();
     }
 }
-
