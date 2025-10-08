@@ -21,46 +21,6 @@ SET time_zone = "+00:00";
 -- Base de données : `shopping2`
 --
 
-DELIMITER $$
---
--- Procédures
---
-CREATE DEFINER=`admin`@`localhost` PROCEDURE `calculate_order_profit` (IN `order_id_param` INT)  BEGIN
-    SELECT 
-        o.id,
-        o.total_price as revenue,
-        (o.quantity * COALESCE(pcc.current_purchase_price, 0)) as product_cost,
-        COALESCE(odc.delivery_cost, 0) as delivery_cost,
-        (o.total_price - 
-         (o.quantity * COALESCE(pcc.current_purchase_price, 0)) - 
-         COALESCE(odc.delivery_cost, 0)) as net_profit
-    FROM orders o
-    LEFT JOIN products p ON o.product_id = p.id
-    LEFT JOIN product_current_costs pcc ON p.id = pcc.product_id
-    LEFT JOIN order_delivery_costs odc ON o.id = odc.order_id
-    WHERE o.id = order_id_param;
-END$$
-
-CREATE DEFINER=`admin`@`localhost` PROCEDURE `get_monthly_financial_summary` (IN `month_param` VARCHAR(7))  BEGIN
-    SELECT 
-        
-        (SELECT COALESCE(SUM(total_revenue), 0) FROM monthly_financial_report WHERE month = month_param) as total_revenue,
-        (SELECT COALESCE(SUM(total_product_costs), 0) FROM monthly_financial_report WHERE month = month_param) as product_costs,
-        (SELECT COALESCE(SUM(total_delivery_costs), 0) FROM monthly_financial_report WHERE month = month_param) as delivery_costs,
-        (SELECT COALESCE(SUM(gross_profit), 0) FROM monthly_financial_report WHERE month = month_param) as gross_profit,
-        
-        (SELECT COALESCE(SUM(total_salary), 0) FROM assistant_salaries WHERE month = month_param AND payment_status = 'paid') as salaries,
-        
-        (SELECT COALESCE(SUM(amount), 0) FROM operational_expenses WHERE DATE_FORMAT(expense_date, '%Y-%m') = month_param) as operational_expenses,
-        
-        ((SELECT COALESCE(SUM(gross_profit), 0) FROM monthly_financial_report WHERE month = month_param) -
-         (SELECT COALESCE(SUM(total_salary), 0) FROM assistant_salaries WHERE month = month_param AND payment_status = 'paid') -
-         (SELECT COALESCE(SUM(amount), 0) FROM operational_expenses WHERE DATE_FORMAT(expense_date, '%Y-%m') = month_param)) as net_profit;
-END$$
-
-DELIMITER ;
-
--- --------------------------------------------------------
 
 --
 -- Structure de la table `depense`
@@ -68,13 +28,13 @@ DELIMITER ;
 
 CREATE TABLE `depense` (
   `id` int NOT NULL,
-  `type` enum('products','users','campagn','others') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `type` enum('products','users','campagn','others') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `product_id` int DEFAULT NULL,
   `manager_id` int DEFAULT NULL,
   `cout` int NOT NULL,
   `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `descrption` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
