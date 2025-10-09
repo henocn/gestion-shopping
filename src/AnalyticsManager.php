@@ -119,32 +119,48 @@ class AnalyticsManager
     /**
      * Récupère les produits les plus vendus sur une période.
      */
-    public function getTopSellingProducts($dateFrom, $dateTo)
+    public function getTopSellingProducts($dateFrom = null, $dateTo = null)
     {
         try {
-            $stmt = $this->pdo->prepare("
-                SELECT 
-                    p.id,
-                    p.name,
-                    u.name as assistant_name,
-                    p.country,
-                    COALESCE(SUM(CASE WHEN o.newstat = 'deliver' THEN o.quantity ELSE 0 END), 0) as total_sold, 
-                    COALESCE(SUM(CASE WHEN o.newstat = 'deliver' THEN o.total_price ELSE 0 END), 0) as total_revenue
-                FROM products p
-                LEFT JOIN orders o ON p.id = o.product_id AND o.created_at BETWEEN ? AND ?
-                LEFT JOIN users u ON o.manager_id = u.id
-                GROUP BY p.id, p.name
-                HAVING total_sold > 0
-                ORDER BY total_sold DESC
-                LIMIT 10
-            ");
-            $stmt->execute([$dateFrom, $dateTo]);
+            $sql = "
+            SELECT 
+                p.id,
+                p.name,
+                u.name AS assistant_name,
+                p.country,
+                COALESCE(SUM(CASE WHEN o.newstat = 'deliver' THEN o.quantity ELSE 0 END), 0) AS total_sold, 
+                COALESCE(SUM(CASE WHEN o.newstat = 'deliver' THEN o.total_price ELSE 0 END), 0) AS total_revenue
+            FROM products p
+            LEFT JOIN orders o 
+                ON p.id = o.product_id
+            LEFT JOIN users u 
+                ON o.manager_id = u.id
+        ";
+
+            $params = [];
+
+            if ($dateFrom && $dateTo) {
+                $sql .= " AND o.created_at BETWEEN ? AND ?";
+                $params = [$dateFrom, $dateTo];
+            }
+
+            $sql .= "
+            GROUP BY p.id, p.name, u.name, p.country
+            HAVING total_sold > 0
+            ORDER BY total_sold DESC
+            LIMIT 5
+        ";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("Erreur getTopSellingProducts: " . $e->getMessage());
             return [];
         }
     }
+
 
     /**
      * Récupère les statistiques détaillées d'un produit.
