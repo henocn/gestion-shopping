@@ -22,31 +22,14 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Bordures colorées pour les cartes */
-.border-left-primary {
-    border-left: 4px solid #4e73df !important;
-}
-
-.border-left-success {
-    border-left: 4px solid var(--success-color) !important;
-}
-
-.border-left-info {
-    border-left: 4px solid var(--info-color) !important;
-}
-
-.border-left-warning {
-    border-left: 4px solid var(--warning-color) !important;
-}
-
 /* Icônes des statistiques */
 .stat-icon {
-    font-size: 2.5rem;
+    font-size: 2.3rem;
     opacity: 0.8;
 }
 
 .sidebar .nav-link {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgb(222, 204, 241);
     border-radius: 10px;
     margin: 5px 0;
     padding: 10px 15px;
@@ -55,8 +38,8 @@
 
 .sidebar .nav-link:hover,
 .sidebar .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
+    background-color: rgb(222, 204, 241);
+    color: rgb(22, 26, 75);
     transform: translateX(5px);
 }
 
