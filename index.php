@@ -34,6 +34,9 @@ $orderStatusStats = $analyticsManager->getOrderStatusStats($dateFrom, $dateTo);
 $assistantRanking = $analyticsManager->getAssistantsRanking($dateFrom, $dateTo);
 $lowStock = $productManager->getLowStockAlerts(10);
 
+var_dump($orderStatusStats);
+die();
+
 
 ?>
 
@@ -59,7 +62,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
                 <div class="text-center mb-4">
                     <h4 class="text-white">
                         <i class="fas fa-chart-line"></i>
-                        LuxeManag
+                        LuxeManager
                     </h4>
                 </div>
 
@@ -84,7 +87,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 magenta-bg">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Main Dashboard</h1>
-                    
+
                     <!-- Filtres de période -->
                     <div class="mb-2 mb-md-0">
                         <form method="GET" class="d-flex gap-2 align-items-center">
@@ -196,9 +199,9 @@ $lowStock = $productManager->getLowStockAlerts(10);
                 <div class="row">
                     <!-- Évolution des ventes -->
                     <div class="col-xl-8 col-lg-7">
-                        <div class="card dashboard-card mb-4">
+                        <div class="card dashboard-card mb-4 paper-bg">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Évolution des Ventes (30 derniers jours)</h6>
+                                <h6 class="m-0 font-weight-bold secondary-color">Évolution des Ventes (30 derniers jours)</h6>
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
@@ -220,48 +223,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                 </div>
                             </div>
                         </div>
-                        <!-- Alertes de stock bas -->
-                        <div class="card dashboard-card mb-4">
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-danger">
-                                    <i class="fas fa-triangle-exclamation"></i> Alertes Stock
-                                    <?php if (!empty($lowStock)) : ?>
-                                        <span class="badge bg-danger ms-2"><?= count($lowStock) ?></span>
-                                    <?php else: ?>
-                                        <span class="badge bg-success ms-2">0</span>
-                                    <?php endif; ?>
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <?php if (!empty($lowStock)) : ?>
-                                    <div class="table-responsive" style="max-height: 260px; overflow:auto;">
-                                        <table class="table table-sm align-middle">
-                                            <thead>
-                                                <tr>
-                                                    <th>Produit</th>
-                                                    <th class="text-end">Stock</th>
-                                                    <th class="text-end">Seuil</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($lowStock as $item): ?>
-                                                    <tr>
-                                                        <td><?= htmlspecialchars($item['name']) ?></td>
-                                                        <td class="text-end">
-                                                            <span class="badge bg-<?= (int)$item['quantity'] <= 0 ? 'danger' : 'warning' ?>"><?= (int)$item['quantity'] ?></span>
-                                                        </td>
-                                                        <td class="text-end">
-                                                            <span class="badge bg-info"><?= (int)$item['low_stock_threshold'] ?></span>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="text-muted small">Aucune alerte de stock pour le moment.</div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 

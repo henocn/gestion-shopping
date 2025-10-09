@@ -56,31 +56,39 @@ class AnalyticsManager
         }
     }
 
-    
+
 
     /**
      * Récupère les statistiques par statut de commande pour une période.
      */
-    public function getOrderStatusStats($dateFrom, $dateTo)
+    public function getOrderStatusStats($dateFrom = null, $dateTo = null)
     {
         try {
-            $stmt = $this->pdo->prepare("
-                SELECT 
-                    newstat as status, 
-                    COUNT(id) as count,
-                    SUM(total_price) as total_amount
-                FROM orders 
-                WHERE created_at BETWEEN ? AND ?
-                GROUP BY newstat
-                ORDER BY count DESC
-            ");
-            $stmt->execute([$dateFrom, $dateTo]);
+            $sql = "
+            SELECT 
+                newstat AS status, 
+                COUNT(id) AS count,
+                COALESCE(SUM(total_price), 0) AS total_amount
+            FROM orders
+        ";
+
+            $params = [];
+            if ($dateFrom && $dateTo) {
+                $sql .= " WHERE created_at BETWEEN ? AND ? ";
+                $params = [$dateFrom, $dateTo];
+            }
+
+            $sql .= " GROUP BY newstat ORDER BY count DESC";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("Erreur getOrderStatusStats: " . $e->getMessage());
             return [];
         }
     }
+
 
     /**
      * Récupère l'évolution des ventes pour les N derniers jours.
