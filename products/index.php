@@ -73,7 +73,7 @@ $soldProducts = $productManager->getSoldProducts();
                             <table id="productsTable" class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        <th>Rendement</th>
                                         <th>Produit</th>
                                         <th>Qté vendue</th>
                                         <th>P.T. Achat</th>
@@ -89,7 +89,7 @@ $soldProducts = $productManager->getSoldProducts();
                                         $profitClass = ($product['avg_profit_per_unit'] > 0) ? 'text-success' : 'text-danger';
                                         ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($product['id']); ?></td>
+                                            <td class="<?php echo $profitClass; ?>"><b><?php echo number_format($product['rendement'], 2, ',', ' '); ?></b> %</td>
                                             <td><?php echo htmlspecialchars($product['name']); ?></td>
                                             <td><?php echo number_format($product['total_sold'], 0, ',', ' '); ?></td>
                                             <td><?php echo number_format($product['cost_price'], 0, ',', ' '); ?> F</td>
@@ -98,16 +98,16 @@ $soldProducts = $productManager->getSoldProducts();
                                                 <?php echo number_format($product['avg_profit_per_unit'], 0, ',', ' '); ?> F
                                             </td>
                                             <td class="<?php echo $profitClass; ?>">
-                                                <?php echo number_format($product['total_profit'], 2, ',', ' '); ?> F
+                                                <?php echo number_format($product['total_profit'], 0, ',', ' '); ?> F
                                             </td>
                                             <td>
                                                 <button
-                                                    class="btn btn-primary btn-sm add-expense"
+                                                    class="btn main-bg text-white btn-sm add-expense"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#expenseModal"
                                                     data-product-id="<?php echo $product['id']; ?>"
                                                     data-product-name="<?php echo htmlspecialchars($product['name']); ?>">
-                                                    <i class="fas fa-plus-circle"></i> Ajouter une dépense
+                                                    <i class="fas fa-plus-circle"></i> Dépense
                                                 </button>
                                             </td>
 

@@ -51,9 +51,9 @@ class ProductManager
      * depuis la table orders
      */
     public function getSoldProducts()
-{
-    try {
-        $stmt = $this->pdo->prepare("
+    {
+        try {
+            $stmt = $this->pdo->prepare("
             SELECT 
                 p.id,
                 p.name,
@@ -61,19 +61,19 @@ class ProductManager
                 SUM(o.total_price) AS total_selling_price,
                 SUM(o.quantity) AS total_sold,
                 (AVG(o.total_price / o.quantity) - AVG(o.unit_price)) AS avg_profit_per_unit,
-                (SUM(o.total_price) - SUM(o.unit_price)) AS total_profit
+                (SUM(o.total_price) - SUM(o.unit_price * o.quantity)) AS total_profit,
+                ROUND(((SUM(o.total_price) - SUM(o.unit_price * o.quantity)) / SUM(o.unit_price * o.quantity)) * 100, 2) AS rendement
             FROM orders o
             JOIN products p ON o.product_id = p.id
             WHERE o.newstat = 'deliver'
             GROUP BY p.id, p.name
             ORDER BY total_sold DESC
         ");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log('Erreur getSoldProducts: ' . $e->getMessage());
-        return [];
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Erreur getSoldProducts: ' . $e->getMessage());
+            return [];
+        }
     }
-}
-
 }
