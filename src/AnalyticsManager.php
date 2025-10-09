@@ -119,23 +119,26 @@ class AnalyticsManager
     /**
      * Récupère les produits les plus vendus sur une période.
      */
-    public function getTopSellingProducts($limit, $dateFrom, $dateTo)
+    public function getTopSellingProducts($dateFrom, $dateTo)
     {
         try {
             $stmt = $this->pdo->prepare("
                 SELECT 
                     p.id,
                     p.name,
+                    u.name as assistant_name,
+                    p.country,
                     COALESCE(SUM(CASE WHEN o.newstat = 'deliver' THEN o.quantity ELSE 0 END), 0) as total_sold, 
                     COALESCE(SUM(CASE WHEN o.newstat = 'deliver' THEN o.total_price ELSE 0 END), 0) as total_revenue
                 FROM products p
                 LEFT JOIN orders o ON p.id = o.product_id AND o.created_at BETWEEN ? AND ?
+                LEFT JOIN users u ON o.manager_id = u.id
                 GROUP BY p.id, p.name
                 HAVING total_sold > 0
                 ORDER BY total_sold DESC
-                LIMIT ?
+                LIMIT 10
             ");
-            $stmt->execute([$dateFrom, $dateTo, $limit]);
+            $stmt->execute([$dateFrom, $dateTo]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("Erreur getTopSellingProducts: " . $e->getMessage());

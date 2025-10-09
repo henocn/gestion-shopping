@@ -56,14 +56,6 @@
     margin: 20px 0;
 }
 
-/* Badges personnalisés pour les statuts */
-.status-badge {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
-}
 
 .status-new { background-color: var(--info-color); color: white; }
 .status-processing { background-color: #007bff; color: white; }
@@ -72,38 +64,6 @@
 .status-unreachable { background-color: var(--warning-color); color: black; }
 .status-remind { background-color: #6f42c1; color: white; }
 
-/* Classement des assistantes */
-.ranking-badge {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-.rank-1 { 
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
-}
-
-.rank-2 { 
-    background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%);
-    box-shadow: 0 3px 10px rgba(192, 192, 192, 0.4);
-}
-
-.rank-3 { 
-    background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
-    box-shadow: 0 3px 10px rgba(205, 127, 50, 0.4);
-}
-
-.rank-other { 
-    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-}
-
 /* Tables responsives améliorées */
 .table {
     border-radius: var(--border-radius);
@@ -111,21 +71,7 @@
     box-shadow: var(--card-shadow);
 }
 
-.table thead th {
-    background: var(--primary-gradient);
-    color: white;
-    border: none;
-    font-weight: 600;
-    padding: 15px;
-}
 
-.table tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.table tbody tr:hover {
-    background-color: rgba(0, 123, 255, 0.05);
-}
 
 /* Filtres et formulaires */
 .form-control:focus {

@@ -25,17 +25,13 @@ $financeManager = new FinanceManager($pdo);
 $analyticsManager = new AnalyticsManager($pdo);
 
 
-
 // Obtenir les statistiques avec les nouvelles classes
 $globalStats = $analyticsManager->getGlobalSalesStats($dateFrom, $dateTo);
-$topProducts = $analyticsManager->getTopSellingProducts(10, $dateFrom, $dateTo);
+$topProducts = $analyticsManager->getTopSellingProducts($dateFrom, $dateTo);
 $salesEvolution = $analyticsManager->getSalesEvolution(30);
 $orderStatusStats = $analyticsManager->getOrderStatusStats($dateFrom, $dateTo);
 $assistantRanking = $analyticsManager->getAssistantsRanking($dateFrom, $dateTo);
 $lowStock = $productManager->getLowStockAlerts(10);
-
-var_dump($orderStatusStats);
-die();
 
 
 ?>
@@ -92,10 +88,10 @@ die();
                     <div class="mb-2 mb-md-0">
                         <form method="GET" class="d-flex gap-2 align-items-center">
                             <div class="d-flex gap-2">
-                                <input type="date" name="date_from" class="form-control form-control-sm"
+                                <input type="date" name="date_from" class="form-control form-control-md" style="border-bottom: 2px solid var(--main);"
                                     value="<?= $dateFrom ?>"
                                     style="width: 140px;">
-                                <input type="date" name="date_to" class="form-control form-control-sm"
+                                <input type="date" name="date_to" class="form-control form-control-md" style="border-bottom: 2px solid var(--main);"
                                     value="<?= $dateTo ?>"
                                     style="width: 140px;">
                             </div>
@@ -199,7 +195,7 @@ die();
                 <div class="row">
                     <!-- Évolution des ventes -->
                     <div class="col-xl-8 col-lg-7">
-                        <div class="card dashboard-card mb-4 paper-bg">
+                        <div class="card dashboard-card mb-4 paper-bg" style="border: 1px solid var(--main);">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                 <h6 class="m-0 font-weight-bold secondary-color">Évolution des Ventes (30 derniers jours)</h6>
                             </div>
@@ -213,7 +209,7 @@ die();
 
                     <!-- Répartition par statut -->
                     <div class="col-xl-4 col-lg-5">
-                        <div class="card dashboard-card mb-4">
+                        <div class="card dashboard-card mb-4 paper-bg" style="border: 1px solid var(--main);">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                 <h6 class="m-0 font-weight-bold text-primary">Statut des Commandes</h6>
                             </div>
@@ -229,116 +225,40 @@ die();
 
                 <!-- Tableaux -->
                 <div class="row">
-                    <!-- Top des produits -->
-                    <div class="col-xl-6 col-lg-6">
-                        <div class="card dashboard-card mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Produits les Plus Vendus</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" width="100%" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Produit</th>
-                                                <th>Quantité</th>
-                                                <th>CA</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($topProducts as $product): ?>
-                                                <tr>
-                                                    <td><?= htmlspecialchars($product['name']) ?></td>
-                                                    <td><?= $product['total_sold'] ?></td>
-                                                    <td><?= number_format($product['total_revenue']) ?> FCFA</td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    <div class="card dashboard-card mb-4 paper-bg" style="border: 1px solid var(--main);">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold main-color">Produits les Plus Vendus</h6>
                         </div>
-                    </div>
-
-                    <!-- Performance assistantes -->
-                    <div class="col-xl-6 col-lg-6">
-                        <div class="card dashboard-card mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Performance des Assistantes</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" width="100%" cellspacing="0">
-                                        <thead>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Produit</th>
+                                            <th>Quantité</th>
+                                            <th>Pays</th>
+                                            <th>Vendeur(se)</th>
+                                            <th>CA</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($topProducts as $product): ?>
                                             <tr>
-                                                <th>Nom</th>
-                                                <th>Commandes</th>
-                                                <th>CA</th>
-                                                <th>Taux</th>
+                                                <td><?= htmlspecialchars($product['name']) ?></td>
+                                                <td><?= $product['total_sold'] ?></td>
+                                                <td><?= $product['country'] ?></td>
+                                                <td><?= $product['assistant_name'] ?></td>
+                                                <td><?= number_format($product['total_revenue']) ?> FCFA</td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach (array_slice($assistantRanking, 0, 10) as $helper): ?>
-                                                <tr>
-                                                    <td><?= htmlspecialchars($helper['name']) ?></td>
-                                                    <td><?= $helper['total_orders'] ?></td>
-                                                    <td><?= number_format($helper['total_revenue']) ?> FCFA</td>
-                                                    <td><?= number_format($helper['conversion_rate'], 1) ?>%</td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Analyse des bénéfices -->
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card dashboard-card mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Analyse des Bénéfices</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="text-center">
-                                            <h4 class="text-success"><?= number_format($profitAnalysis['total_revenue'] ?? 0) ?> FCFA</h4>
-                                            <p class="small text-muted">Chiffre d'Affaires</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h4 class="text-warning">
-                                            <?php
-                                            $totalCosts = (float)($profitAnalysis['product_costs'] ?? 0) + (float)($profitAnalysis['delivery_costs'] ?? 0);
-                                            echo number_format($totalCosts);
-                                            ?> FCFA
-                                        </h4>
-                                        <p class="small text-muted">Coûts Totaux (Achat + Dépenses)</p>
-                                        <p class="small text-muted">Coûts (achat + livraison)</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <h4 class="text-primary"><?= number_format($profitAnalysis['net_profit'] ?? 0) ?> FCFA</h4>
-                                        <p class="small text-muted">Bénéfice Net</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <h4 class="text-info"><?= number_format($profitAnalysis['profit_margin'] ?? 0, 1) ?>%</h4>
-                                        <p class="small text-muted">Marge Bénéficiaire</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            </main>
         </div>
-        </main>
-    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
