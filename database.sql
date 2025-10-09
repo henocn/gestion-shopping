@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost:3306
--- Généré le : ven. 03 oct. 2025 à 15:46
+-- Généré le : mer. 08 oct. 2025 à 12:03
 -- Version du serveur : 8.0.43-0ubuntu0.22.04.2
 -- Version de PHP : 8.1.33
 
@@ -21,219 +21,20 @@ SET time_zone = "+00:00";
 -- Base de données : `shopping2`
 --
 
-DELIMITER $$
---
--- Procédures
---
-CREATE DEFINER=`admin`@`localhost` PROCEDURE `calculate_order_profit` (IN `order_id_param` INT)  BEGIN
-    SELECT 
-        o.id,
-        o.total_price as revenue,
-        (o.quantity * COALESCE(pcc.current_purchase_price, 0)) as product_cost,
-        COALESCE(odc.delivery_cost, 0) as delivery_cost,
-        (o.total_price - 
-         (o.quantity * COALESCE(pcc.current_purchase_price, 0)) - 
-         COALESCE(odc.delivery_cost, 0)) as net_profit
-    FROM orders o
-    LEFT JOIN products p ON o.product_id = p.id
-    LEFT JOIN product_current_costs pcc ON p.id = pcc.product_id
-    LEFT JOIN order_delivery_costs odc ON o.id = odc.order_id
-    WHERE o.id = order_id_param;
-END$$
-
-CREATE DEFINER=`admin`@`localhost` PROCEDURE `get_monthly_financial_summary` (IN `month_param` VARCHAR(7))  BEGIN
-    SELECT 
-        
-        (SELECT COALESCE(SUM(total_revenue), 0) FROM monthly_financial_report WHERE month = month_param) as total_revenue,
-        (SELECT COALESCE(SUM(total_product_costs), 0) FROM monthly_financial_report WHERE month = month_param) as product_costs,
-        (SELECT COALESCE(SUM(total_delivery_costs), 0) FROM monthly_financial_report WHERE month = month_param) as delivery_costs,
-        (SELECT COALESCE(SUM(gross_profit), 0) FROM monthly_financial_report WHERE month = month_param) as gross_profit,
-        
-        (SELECT COALESCE(SUM(total_salary), 0) FROM assistant_salaries WHERE month = month_param AND payment_status = 'paid') as salaries,
-        
-        (SELECT COALESCE(SUM(amount), 0) FROM operational_expenses WHERE DATE_FORMAT(expense_date, '%Y-%m') = month_param) as operational_expenses,
-        
-        ((SELECT COALESCE(SUM(gross_profit), 0) FROM monthly_financial_report WHERE month = month_param) -
-         (SELECT COALESCE(SUM(total_salary), 0) FROM assistant_salaries WHERE month = month_param AND payment_status = 'paid') -
-         (SELECT COALESCE(SUM(amount), 0) FROM operational_expenses WHERE DATE_FORMAT(expense_date, '%Y-%m') = month_param)) as net_profit;
-END$$
-
-DELIMITER ;
-
--- --------------------------------------------------------
 
 --
--- Structure de la table `advertising_campaigns`
+-- Structure de la table `depense`
 --
 
-CREATE TABLE `advertising_campaigns` (
+CREATE TABLE `depense` (
   `id` int NOT NULL,
-  `campaign_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `platform` enum('facebook','instagram','google','tiktok','whatsapp','autres') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `start_date` date NOT NULL,
-  `end_date` date DEFAULT NULL,
-  `budget` decimal(10,2) NOT NULL COMMENT 'Budget alloué',
-  `spent` decimal(10,2) DEFAULT '0.00' COMMENT 'Montant dépensé',
-  `impressions` int DEFAULT '0' COMMENT 'Nombre d''impressions',
-  `clicks` int DEFAULT '0' COMMENT 'Nombre de clics',
-  `conversions` int DEFAULT '0' COMMENT 'Nombre de conversions/ventes',
-  `status` enum('active','paused','completed','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Campagnes publicitaires';
-
---
--- Déchargement des données de la table `advertising_campaigns`
---
-
-INSERT INTO `advertising_campaigns` (`id`, `campaign_name`, `platform`, `start_date`, `end_date`, `budget`, `spent`, `impressions`, `clicks`, `conversions`, `status`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 'Campagne Rentrée Scolaire 2025', 'facebook', '2025-09-01', '2025-09-30', '50000.00', '35000.00', 125000, 2500, 15, 'active', 'Ciblage parents et étudiants', '2025-10-03 00:51:13', '2025-10-03 00:51:13'),
-(2, 'Campagne Rentrée Scolaire 2025', 'facebook', '2025-09-01', '2025-09-30', '50000.00', '35000.00', 125000, 2500, 15, 'active', 'Ciblage parents et étudiants', '2025-10-03 00:52:16', '2025-10-03 00:52:16');
-
--- --------------------------------------------------------
-
---
--- Doublure de structure pour la vue `assistant_profitability`
--- (Voir ci-dessous la vue réelle)
---
-CREATE TABLE `assistant_profitability` (
-`assistant_id` int
-,`assistant_name` varchar(64)
-,`month` varchar(7)
-,`delivered_orders` bigint
-,`total_revenue` decimal(32,0)
-,`product_costs` decimal(42,2)
-,`gross_profit` decimal(43,2)
-,`salary_cost` decimal(10,2)
-,`net_profit` decimal(44,2)
-);
-
--- --------------------------------------------------------
-
---
--- Structure de la table `assistant_salaries`
---
-
-CREATE TABLE `assistant_salaries` (
-  `id` int NOT NULL,
-  `user_id` int NOT NULL COMMENT 'ID de l''assistante',
-  `month` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mois (format YYYY-MM)',
-  `base_salary` decimal(10,2) DEFAULT '0.00' COMMENT 'Salaire de base',
-  `commission_rate` decimal(5,2) DEFAULT '0.00' COMMENT 'Taux de commission (%)',
-  `commission_amount` decimal(10,2) DEFAULT '0.00' COMMENT 'Montant des commissions',
-  `bonus` decimal(10,2) DEFAULT '0.00' COMMENT 'Prime',
-  `deductions` decimal(10,2) DEFAULT '0.00' COMMENT 'Déductions',
-  `total_salary` decimal(10,2) NOT NULL COMMENT 'Salaire total',
-  `payment_date` date DEFAULT NULL COMMENT 'Date de paiement',
-  `payment_status` enum('pending','paid','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Salaires des assistantes';
-
--- --------------------------------------------------------
-
---
--- Structure de la table `monthly_budgets`
---
-
-CREATE TABLE `monthly_budgets` (
-  `id` int NOT NULL,
-  `month` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mois (format YYYY-MM)',
-  `budget_category` enum('publicite','salaires','hebergement','logistique','autres') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `allocated_amount` decimal(10,2) NOT NULL COMMENT 'Montant alloué',
-  `spent_amount` decimal(10,2) DEFAULT '0.00' COMMENT 'Montant dépensé (calculé)',
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Budgets mensuels par catégorie';
-
---
--- Déchargement des données de la table `monthly_budgets`
---
-
-INSERT INTO `monthly_budgets` (`id`, `month`, `budget_category`, `allocated_amount`, `spent_amount`, `notes`, `created_at`, `updated_at`) VALUES
-(1, '2025-10', 'publicite', '75000.00', '0.00', NULL, '2025-10-03 00:49:51', '2025-10-03 00:49:51'),
-(2, '2025-10', 'hebergement', '20000.00', '0.00', NULL, '2025-10-03 00:49:51', '2025-10-03 00:49:51'),
-(3, '2025-10', 'salaires', '150000.00', '0.00', NULL, '2025-10-03 00:49:51', '2025-10-03 00:49:51'),
-(4, '2025-10', 'logistique', '30000.00', '0.00', NULL, '2025-10-03 00:49:51', '2025-10-03 00:49:51');
-
--- --------------------------------------------------------
-
---
--- Doublure de structure pour la vue `monthly_financial_report`
--- (Voir ci-dessous la vue réelle)
---
-CREATE TABLE `monthly_financial_report` (
-`month` varchar(7)
-,`delivered_orders` bigint
-,`total_revenue` decimal(32,0)
-,`total_product_costs` decimal(42,2)
-,`total_delivery_costs` decimal(32,2)
-,`gross_profit` decimal(44,2)
-);
-
--- --------------------------------------------------------
-
---
--- Structure de la table `monthly_targets`
---
-
-CREATE TABLE `monthly_targets` (
-  `id` int NOT NULL,
-  `month` varchar(7) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mois (format YYYY-MM)',
-  `user_id` int DEFAULT NULL COMMENT 'ID assistante (NULL = objectif global)',
-  `target_revenue` decimal(10,2) NOT NULL COMMENT 'Objectif de CA',
-  `target_orders` int DEFAULT '0' COMMENT 'Objectif nombre de commandes',
-  `target_profit` decimal(10,2) DEFAULT '0.00' COMMENT 'Objectif de profit',
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Objectifs mensuels';
-
---
--- Déchargement des données de la table `monthly_targets`
---
-
-INSERT INTO `monthly_targets` (`id`, `month`, `user_id`, `target_revenue`, `target_orders`, `target_profit`, `notes`, `created_at`, `updated_at`) VALUES
-(1, '2025-10', NULL, '1000000.00', 100, '400000.00', 'Objectif mensuel standard', '2025-10-03 00:49:51', '2025-10-03 00:49:51'),
-(2, '2025-10', 9, '300000.00', 30, '0.00', NULL, '2025-10-03 00:49:51', '2025-10-03 00:49:51');
-
--- --------------------------------------------------------
-
---
--- Structure de la table `operational_expenses`
---
-
-CREATE TABLE `operational_expenses` (
-  `id` int NOT NULL,
-  `expense_type` enum('publicite','hebergement','domaine','marketing','logistique','emballage','livraison','fournitures','telecommunications','autres') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `amount` decimal(10,2) NOT NULL COMMENT 'Montant de la dépense',
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Description de la dépense',
-  `expense_date` date NOT NULL COMMENT 'Date de la dépense',
-  `category` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Catégorie personnalisée',
-  `vendor` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Fournisseur/Vendeur',
-  `payment_method` enum('cash','bank_transfer','mobile_money','credit_card','other') COLLATE utf8mb4_unicode_ci DEFAULT 'cash',
-  `payment_status` enum('pending','paid','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT 'paid',
-  `receipt_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Numéro de reçu',
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_by` int DEFAULT NULL COMMENT 'Créé par (user_id)',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Dépenses opérationnelles';
-
---
--- Déchargement des données de la table `operational_expenses`
---
-
-INSERT INTO `operational_expenses` (`id`, `expense_type`, `amount`, `description`, `expense_date`, `category`, `vendor`, `payment_method`, `payment_status`, `receipt_number`, `notes`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 'publicite', '25000.00', 'Campagne Facebook Ads - Septembre', '2025-09-15', NULL, 'Meta', 'bank_transfer', 'paid', NULL, NULL, NULL, '2025-10-03 00:51:13', '2025-10-03 00:51:13'),
-(2, 'hebergement', '15000.00', 'Hébergement site web - Septembre', '2025-09-01', NULL, 'OVH', 'cash', 'paid', NULL, NULL, NULL, '2025-10-03 00:51:13', '2025-10-03 00:51:13'),
-(3, 'telecommunications', '5000.00', 'Forfait mobile professionnel', '2025-09-10', NULL, NULL, 'mobile_money', 'paid', NULL, NULL, NULL, '2025-10-03 00:51:13', '2025-10-03 00:51:13'),
-(4, 'publicite', '25000.00', 'Campagne Facebook Ads - Septembre', '2025-09-15', NULL, 'Meta', 'bank_transfer', 'paid', NULL, NULL, NULL, '2025-10-03 00:52:16', '2025-10-03 00:52:16'),
-(5, 'hebergement', '15000.00', 'Hébergement site web - Septembre', '2025-09-01', NULL, 'OVH', 'cash', 'paid', NULL, NULL, NULL, '2025-10-03 00:52:16', '2025-10-03 00:52:16'),
-(6, 'telecommunications', '5000.00', 'Forfait mobile professionnel', '2025-09-10', NULL, NULL, 'mobile_money', 'paid', NULL, NULL, NULL, '2025-10-03 00:52:16', '2025-10-03 00:52:16');
+  `type` enum('products','users','campagn','others') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `product_id` int DEFAULT NULL,
+  `manager_id` int DEFAULT NULL,
+  `cout` int NOT NULL,
+  `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `descrption` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -310,63 +111,8 @@ INSERT INTO `orders` (`id`, `product_id`, `pack_id`, `quantity`, `unit_price`, `
 (43, 10, 5, 10, 104, 100, 'Simon Tchamie', 'TD', '92467822', 'togo', '', 0, '', '2025-09-22 13:05:01', '2025-10-03 00:20:41', 'deliver'),
 (44, 9, 0, 1, 2700, 2700, 'Simon Tchamie', 'TD', '92467822', 'togo', '', 0, '', '2025-09-22 13:10:16', '2025-10-03 00:20:29', 'canceled'),
 (45, 11, 2, 1, 5000, 8000, 'Simon Tchamie', 'TD', '92467822', 'togo', '', 0, '', '2025-09-28 19:21:22', '2025-10-03 00:19:46', 'deliver'),
-(46, 11, 2, 2, 5000, 16000, 'Simon Tchamie', 'TD', '92467822', 'togo', '', 0, '', '2025-09-28 19:21:45', '2025-09-28 19:22:45', 'remind');
-
--- --------------------------------------------------------
-
---
--- Structure de la table `order_campaign_tracking`
---
-
-CREATE TABLE `order_campaign_tracking` (
-  `id` int NOT NULL,
-  `order_id` int NOT NULL,
-  `campaign_id` int NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tracking commandes par campagne';
-
--- --------------------------------------------------------
-
---
--- Structure de la table `order_cost_snapshots`
---
-
-CREATE TABLE `order_cost_snapshots` (
-  `id` int NOT NULL,
-  `order_id` int NOT NULL,
-  `product_id` int NOT NULL,
-  `quantity` int NOT NULL,
-  `unit_purchase_price_at_sale` decimal(10,2) NOT NULL COMMENT 'Prix d''achat unitaire au moment de la vente',
-  `total_purchase_cost_at_sale` decimal(12,2) NOT NULL COMMENT 'Coût d''achat total au moment de la vente',
-  `delivery_cost_at_sale` decimal(10,2) DEFAULT NULL COMMENT 'Coût de livraison associé (si applicable)',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Snapshot des coûts pour chaque commande au moment de la vente';
-
--- --------------------------------------------------------
-
---
--- Structure de la table `order_delivery_costs`
---
-
-CREATE TABLE `order_delivery_costs` (
-  `id` int NOT NULL,
-  `order_id` int NOT NULL,
-  `delivery_cost` decimal(10,2) NOT NULL COMMENT 'Coût de livraison',
-  `delivery_partner` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Partenaire de livraison',
-  `delivery_date` date DEFAULT NULL,
-  `notes` text COLLATE utf8mb4_unicode_ci,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Coûts de livraison par commande';
-
---
--- Déchargement des données de la table `order_delivery_costs`
---
-
-INSERT INTO `order_delivery_costs` (`id`, `order_id`, `delivery_cost`, `delivery_partner`, `delivery_date`, `notes`, `created_at`) VALUES
-(1, 7, '500.00', 'Livraison Express Tchad', '2025-09-20', NULL, '2025-10-03 00:51:13'),
-(2, 36, '500.00', 'Livraison Express Tchad', '2025-09-20', NULL, '2025-10-03 00:51:13'),
-(3, 37, '500.00', 'Livraison Express Tchad', '2025-09-20', NULL, '2025-10-03 00:51:13'),
-(7, 45, '2500.00', '100', '2025-10-03', NULL, '2025-10-03 06:24:27');
+(46, 11, 2, 2, 5000, 16000, 'Simon Tchamie', 'TD', '92467822', 'togo', '', 0, '', '2025-09-28 19:21:45', '2025-09-28 19:22:45', 'remind'),
+(47, 1, 0, 1, 300000, 300000, 'AWIZOBA TCHAMIÈ', 'TD', '98942676', 'DONGOYO', '', 8, NULL, '2025-10-04 18:39:09', '2025-10-04 18:39:09', 'new');
 
 -- --------------------------------------------------------
 
@@ -458,20 +204,6 @@ INSERT INTO `product_current_costs` (`id`, `product_id`, `current_purchase_price
 -- --------------------------------------------------------
 
 --
--- Structure de la table `product_images`
---
-
-CREATE TABLE `product_images` (
-  `id` int NOT NULL,
-  `product_id` int NOT NULL,
-  `image_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_main` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 si c''est l''image principale',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Galerie d''images des produits';
-
--- --------------------------------------------------------
-
---
 -- Structure de la table `product_packs`
 --
 
@@ -495,47 +227,6 @@ INSERT INTO `product_packs` (`id`, `product_id`, `titre`, `image`, `quantity`, `
 (4, 11, 'premium', '1757350447_medoc2.jpeg', 3, 20000, 30000),
 (5, 10, 'essentiels', '1757375139_medoc1.jpeg', 9, 10, 90),
 (6, 10, 'medium', '1757403472_medoc3.jpeg', 13, 250, 100);
-
--- --------------------------------------------------------
-
---
--- Doublure de structure pour la vue `product_profitability`
--- (Voir ci-dessous la vue réelle)
---
-CREATE TABLE `product_profitability` (
-`id` int
-,`name` varchar(128)
-,`selling_price` int
-,`purchase_price` decimal(10,2)
-,`unit_profit` decimal(13,2)
-,`profit_margin_percent` decimal(17,2)
-);
-
--- --------------------------------------------------------
-
---
--- Structure de la table `product_purchase_history`
---
-
-CREATE TABLE `product_purchase_history` (
-  `id` int NOT NULL,
-  `product_id` int NOT NULL,
-  `purchase_price` decimal(10,2) NOT NULL COMMENT 'Prix d''achat unitaire',
-  `quantity` int NOT NULL COMMENT 'Quantité achetée',
-  `total_cost` decimal(10,2) NOT NULL COMMENT 'Coût total de l''achat',
-  `supplier` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Fournisseur',
-  `purchase_date` datetime NOT NULL COMMENT 'Date d''achat',
-  `notes` text COLLATE utf8mb4_unicode_ci COMMENT 'Notes sur l''achat',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Historique des achats de produits';
-
---
--- Déchargement des données de la table `product_purchase_history`
---
-
-INSERT INTO `product_purchase_history` (`id`, `product_id`, `purchase_price`, `quantity`, `total_cost`, `supplier`, `purchase_date`, `notes`, `created_at`) VALUES
-(1, 9, '1500.00', 100, '150000.00', 'Pharmacie Centrale', '2025-09-05 10:00:00', 'Achat en gros avec remise de 10%', '2025-10-03 00:51:13'),
-(2, 9, '1500.00', 100, '150000.00', 'Pharmacie Centrale', '2025-09-05 10:00:00', 'Achat en gros avec remise de 10%', '2025-10-03 00:52:16');
 
 -- --------------------------------------------------------
 
@@ -575,23 +266,6 @@ INSERT INTO `product_video` (`id`, `product_id`, `video_url`, `texte`) VALUES
 -- --------------------------------------------------------
 
 --
--- Structure de la table `stock_movements`
---
-
-CREATE TABLE `stock_movements` (
-  `id` int NOT NULL,
-  `product_id` int NOT NULL,
-  `order_id` int DEFAULT NULL COMMENT 'Lié à une commande si c''est une sortie',
-  `purchase_id` int DEFAULT NULL COMMENT 'Lié à un achat si c''est une entrée',
-  `movement_type` enum('in','out','adjustment') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `quantity` int NOT NULL COMMENT 'Quantité du mouvement (positive pour in, négative pour out)',
-  `reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Raison du mouvement (ex: vente, achat, retour, perte)',
-  `movement_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Historique des mouvements de stock';
-
--- --------------------------------------------------------
-
---
 -- Structure de la table `users`
 --
 
@@ -615,79 +289,9 @@ INSERT INTO `users` (`id`, `email`, `name`, `password`, `role`, `country`, `is_a
 (8, 'ngasamah@gmail.com', 'N\'GASAMA Henoc', '$2y$12$KNaOU5l4NcZzOchNM0togeV09lW7oQSvajUADQiF9.OHaPRbd5ZIC', 1, 'TD', 1),
 (9, 'assistante@gmail.com', 'ASSI Assistante', '$2y$12$tOzGoyI3IHho9Xqiyi908OjXxFXCl9v9/Kpb.hI0dGSC07OMpq2Bu', 0, 'GN', 1);
 
--- --------------------------------------------------------
-
---
--- Structure de la vue `assistant_profitability`
---
-DROP TABLE IF EXISTS `assistant_profitability`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`admin`@`localhost` SQL SECURITY DEFINER VIEW `assistant_profitability`  AS SELECT `u`.`id` AS `assistant_id`, `u`.`name` AS `assistant_name`, date_format(`o`.`created_at`,'%Y-%m') AS `month`, count((case when (`o`.`newstat` = 'deliver') then 1 end)) AS `delivered_orders`, sum((case when (`o`.`newstat` = 'deliver') then `o`.`total_price` else 0 end)) AS `total_revenue`, sum((case when (`o`.`newstat` = 'deliver') then (`o`.`quantity` * coalesce(`pcc`.`current_purchase_price`,0)) else 0 end)) AS `product_costs`, (sum((case when (`o`.`newstat` = 'deliver') then `o`.`total_price` else 0 end)) - sum((case when (`o`.`newstat` = 'deliver') then (`o`.`quantity` * coalesce(`pcc`.`current_purchase_price`,0)) else 0 end))) AS `gross_profit`, coalesce(`ast`.`total_salary`,0) AS `salary_cost`, ((sum((case when (`o`.`newstat` = 'deliver') then `o`.`total_price` else 0 end)) - sum((case when (`o`.`newstat` = 'deliver') then (`o`.`quantity` * coalesce(`pcc`.`current_purchase_price`,0)) else 0 end))) - coalesce(`ast`.`total_salary`,0)) AS `net_profit` FROM ((((`users` `u` left join `orders` `o` on((`u`.`id` = `o`.`manager_id`))) left join `products` `p` on((`o`.`product_id` = `p`.`id`))) left join `product_current_costs` `pcc` on((`p`.`id` = `pcc`.`product_id`))) left join `assistant_salaries` `ast` on(((`u`.`id` = `ast`.`user_id`) and (date_format(`o`.`created_at`,'%Y-%m') = `ast`.`month`)))) WHERE ((`u`.`role` = 0) AND (`u`.`is_active` = 1)) GROUP BY `u`.`id`, `u`.`name`, date_format(`o`.`created_at`,'%Y-%m') ;
-
--- --------------------------------------------------------
-
---
--- Structure de la vue `monthly_financial_report`
---
-DROP TABLE IF EXISTS `monthly_financial_report`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`admin`@`localhost` SQL SECURITY DEFINER VIEW `monthly_financial_report`  AS SELECT date_format(`o`.`created_at`,'%Y-%m') AS `month`, count((case when (`o`.`newstat` = 'deliver') then 1 end)) AS `delivered_orders`, sum((case when (`o`.`newstat` = 'deliver') then `o`.`total_price` else 0 end)) AS `total_revenue`, sum((case when (`o`.`newstat` = 'deliver') then (`o`.`quantity` * coalesce(`pcc`.`current_purchase_price`,0)) else 0 end)) AS `total_product_costs`, coalesce(sum((case when (`o`.`newstat` = 'deliver') then `odc`.`delivery_cost` else 0 end)),0) AS `total_delivery_costs`, ((sum((case when (`o`.`newstat` = 'deliver') then `o`.`total_price` else 0 end)) - sum((case when (`o`.`newstat` = 'deliver') then (`o`.`quantity` * coalesce(`pcc`.`current_purchase_price`,0)) else 0 end))) - coalesce(sum((case when (`o`.`newstat` = 'deliver') then `odc`.`delivery_cost` else 0 end)),0)) AS `gross_profit` FROM (((`orders` `o` left join `products` `p` on((`o`.`product_id` = `p`.`id`))) left join `product_current_costs` `pcc` on((`p`.`id` = `pcc`.`product_id`))) left join `order_delivery_costs` `odc` on((`o`.`id` = `odc`.`order_id`))) GROUP BY date_format(`o`.`created_at`,'%Y-%m') ;
-
--- --------------------------------------------------------
-
---
--- Structure de la vue `product_profitability`
---
-DROP TABLE IF EXISTS `product_profitability`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`admin`@`localhost` SQL SECURITY DEFINER VIEW `product_profitability`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`price` AS `selling_price`, coalesce(`pcc`.`current_purchase_price`,0) AS `purchase_price`, (`p`.`price` - coalesce(`pcc`.`current_purchase_price`,0)) AS `unit_profit`, (case when (`p`.`price` > 0) then round((((`p`.`price` - coalesce(`pcc`.`current_purchase_price`,0)) / `p`.`price`) * 100),2) else 0 end) AS `profit_margin_percent` FROM (`products` `p` left join `product_current_costs` `pcc` on((`p`.`id` = `pcc`.`product_id`))) ;
-
 --
 -- Index pour les tables déchargées
 --
-
---
--- Index pour la table `advertising_campaigns`
---
-ALTER TABLE `advertising_campaigns`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_platform` (`platform`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_dates` (`start_date`,`end_date`);
-
---
--- Index pour la table `assistant_salaries`
---
-ALTER TABLE `assistant_salaries`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_salary` (`user_id`,`month`),
-  ADD KEY `idx_month` (`month`),
-  ADD KEY `idx_payment_status` (`payment_status`);
-
---
--- Index pour la table `monthly_budgets`
---
-ALTER TABLE `monthly_budgets`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_budget` (`month`,`budget_category`),
-  ADD KEY `idx_month` (`month`);
-
---
--- Index pour la table `monthly_targets`
---
-ALTER TABLE `monthly_targets`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_target` (`month`,`user_id`),
-  ADD KEY `idx_month` (`month`);
-
---
--- Index pour la table `operational_expenses`
---
-ALTER TABLE `operational_expenses`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_expense_type` (`expense_type`),
-  ADD KEY `idx_expense_date` (`expense_date`),
-  ADD KEY `idx_payment_status` (`payment_status`);
 
 --
 -- Index pour la table `orders`
@@ -696,30 +300,6 @@ ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_orders_status_date` (`newstat`,`created_at`),
   ADD KEY `idx_orders_manager_date` (`manager_id`,`created_at`);
-
---
--- Index pour la table `order_campaign_tracking`
---
-ALTER TABLE `order_campaign_tracking`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_order_campaign` (`order_id`),
-  ADD KEY `idx_campaign` (`campaign_id`);
-
---
--- Index pour la table `order_cost_snapshots`
---
-ALTER TABLE `order_cost_snapshots`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_order_cost_snapshot` (`order_id`),
-  ADD KEY `idx_product_snapshot` (`product_id`);
-
---
--- Index pour la table `order_delivery_costs`
---
-ALTER TABLE `order_delivery_costs`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_order_delivery` (`order_id`),
-  ADD KEY `idx_delivery_date` (`delivery_date`);
 
 --
 -- Index pour la table `products`
@@ -742,26 +322,11 @@ ALTER TABLE `product_current_costs`
   ADD UNIQUE KEY `unique_product_cost` (`product_id`);
 
 --
--- Index pour la table `product_images`
---
-ALTER TABLE `product_images`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_product_image` (`product_id`);
-
---
 -- Index pour la table `product_packs`
 --
 ALTER TABLE `product_packs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `product_id` (`product_id`);
-
---
--- Index pour la table `product_purchase_history`
---
-ALTER TABLE `product_purchase_history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_product_purchase` (`product_id`,`purchase_date`),
-  ADD KEY `idx_purchase_date` (`purchase_date`);
 
 --
 -- Index pour la table `product_stock`
@@ -778,15 +343,6 @@ ALTER TABLE `product_video`
   ADD KEY `product_id` (`product_id`);
 
 --
--- Index pour la table `stock_movements`
---
-ALTER TABLE `stock_movements`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_product_movement` (`product_id`),
-  ADD KEY `idx_order_id` (`order_id`),
-  ADD KEY `idx_purchase_id` (`purchase_id`);
-
---
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
@@ -797,58 +353,10 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT pour la table `advertising_campaigns`
---
-ALTER TABLE `advertising_campaigns`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT pour la table `assistant_salaries`
---
-ALTER TABLE `assistant_salaries`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT pour la table `monthly_budgets`
---
-ALTER TABLE `monthly_budgets`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT pour la table `monthly_targets`
---
-ALTER TABLE `monthly_targets`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT pour la table `operational_expenses`
---
-ALTER TABLE `operational_expenses`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
 -- AUTO_INCREMENT pour la table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
-
---
--- AUTO_INCREMENT pour la table `order_campaign_tracking`
---
-ALTER TABLE `order_campaign_tracking`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT pour la table `order_cost_snapshots`
---
-ALTER TABLE `order_cost_snapshots`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT pour la table `order_delivery_costs`
---
-ALTER TABLE `order_delivery_costs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT pour la table `products`
@@ -869,22 +377,10 @@ ALTER TABLE `product_current_costs`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- AUTO_INCREMENT pour la table `product_images`
---
-ALTER TABLE `product_images`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT pour la table `product_packs`
 --
 ALTER TABLE `product_packs`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT pour la table `product_purchase_history`
---
-ALTER TABLE `product_purchase_history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `product_stock`
@@ -899,12 +395,6 @@ ALTER TABLE `product_video`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT pour la table `stock_movements`
---
-ALTER TABLE `stock_movements`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
@@ -913,32 +403,6 @@ ALTER TABLE `users`
 --
 -- Contraintes pour les tables déchargées
 --
-
---
--- Contraintes pour la table `assistant_salaries`
---
-ALTER TABLE `assistant_salaries`
-  ADD CONSTRAINT `assistant_salaries_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Contraintes pour la table `order_campaign_tracking`
---
-ALTER TABLE `order_campaign_tracking`
-  ADD CONSTRAINT `order_campaign_tracking_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `order_campaign_tracking_ibfk_2` FOREIGN KEY (`campaign_id`) REFERENCES `advertising_campaigns` (`id`) ON DELETE CASCADE;
-
---
--- Contraintes pour la table `order_cost_snapshots`
---
-ALTER TABLE `order_cost_snapshots`
-  ADD CONSTRAINT `order_cost_snapshots_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `order_cost_snapshots_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
-
---
--- Contraintes pour la table `order_delivery_costs`
---
-ALTER TABLE `order_delivery_costs`
-  ADD CONSTRAINT `order_delivery_costs_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Contraintes pour la table `product_caracteristics`
@@ -953,22 +417,10 @@ ALTER TABLE `product_current_costs`
   ADD CONSTRAINT `product_current_costs_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
--- Contraintes pour la table `product_images`
---
-ALTER TABLE `product_images`
-  ADD CONSTRAINT `product_images_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
-
---
 -- Contraintes pour la table `product_packs`
 --
 ALTER TABLE `product_packs`
   ADD CONSTRAINT `product_packs_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Contraintes pour la table `product_purchase_history`
---
-ALTER TABLE `product_purchase_history`
-  ADD CONSTRAINT `product_purchase_history_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 --
 -- Contraintes pour la table `product_stock`
@@ -981,14 +433,6 @@ ALTER TABLE `product_stock`
 --
 ALTER TABLE `product_video`
   ADD CONSTRAINT `product_mentions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Contraintes pour la table `stock_movements`
---
-ALTER TABLE `stock_movements`
-  ADD CONSTRAINT `stock_movements_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `stock_movements_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `stock_movements_ibfk_3` FOREIGN KEY (`purchase_id`) REFERENCES `product_purchase_history` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

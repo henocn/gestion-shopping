@@ -2,7 +2,7 @@
     "name": "henoc/gestion-shopping",
     "autoload": {
         "psr-4": {
-            "src\\": "src/"
+            "Src\\": "src/"
         }
     },
     "authors": [
