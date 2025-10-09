@@ -262,19 +262,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Fonction pour afficher/masquer les champs de date personnalisés
-        function toggleCustomDates(period) {
-            const customDates = document.getElementById('custom-dates');
-            if (period === 'custom') {
-                customDates.style.display = 'flex';
-            } else {
-                customDates.style.display = 'none';
-                // Soumettre automatiquement pour les périodes prédéfinies
-                document.querySelector('form').submit();
-            }
-        }
-    </script>
+
     <script>
         // Graphique d'évolution des ventes
         const salesCtx = document.getElementById('salesChart').getContext('2d');
