@@ -47,14 +47,6 @@
     opacity: 0.8;
 }
 
-/* Sidebar */
-.sidebar {
-    background: var(--primary-gradient);
-    min-height: 100vh;
-    position: sticky;
-    top: 0;
-}
-
 .sidebar .nav-link {
     color: rgba(255, 255, 255, 0.8);
     border-radius: 10px;

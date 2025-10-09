@@ -1,0 +1,51 @@
+:root {
+
+--primary: #ce8557;
+--secondary: rgb(189, 133, 43);
+--paper: #dcc5f5ff;
+--magenta: rgb(169, 189, 207);
+--main: rgb(16, 20, 78);
+}
+
+
+
+.primary-color {
+  color: var(--primary);
+}
+
+.secondary-color {
+  color: var(--secondary);
+}
+
+.paper-color {
+  color: var(--paper);
+}
+
+.magenta-color {
+  color: var(--magenta);
+}
+
+.main-color {
+  color: var(--main);
+}
+
+
+.primary-bg {
+  background-color: var(--primary);
+}
+
+.secondary-bg {
+  background-color: var(--secondary);
+}
+
+.paper-bg {
+  background-color: var(--paper);
+}
+
+.magenta-bg {
+  background-color: var(--magenta);
+}
+
+.main-bg {
+  background-color: var(--main);
+}
