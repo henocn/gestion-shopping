@@ -7,16 +7,14 @@
     --danger-color: #dc3545;
     --info-color: #17a2b8;
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --border-radius: 15px;
+    --border-radius: 8px;
 }
 
 /* Cartes du tableau de bord */
 .dashboard-card {
-    border: none;
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
     transition: all 0.3s ease;
-    background: white;
 }
 
 .dashboard-card:hover {

@@ -97,8 +97,8 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                     style="width: 140px;">
                             </div>
 
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="fas fa-search"></i>
+                            <button type="submit" class="btn main-bg btn-sm">
+                                <i class="fas fa-search btn-primary"></i>
                             </button>
                             <!-- reset -->
                             <a href="index.php" class="btn btn-secondary btn-sm">
@@ -111,19 +111,19 @@ $lowStock = $productManager->getLowStockAlerts(10);
                 <!-- Cartes statistiques principales -->
                 <div class="row mb-4">
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card dashboard-card border-left-primary h-100 py-2">
+                        <div class="card dashboard-card paper-bg h-100 py-2" style="border: 1px solid; border-left: 5px solid var(--main);">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Chiffre d'Affaires
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1 secondary-color">
+                                            Chiffre d'Affaires Total
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
                                             <?= number_format($globalStats['total_revenue'] ?? 0) ?> FCFA
                                         </div>
                                     </div>
                                     <div class="col-auto">
-                                        <i class="fas fa-coins stat-icon text-primary"></i>
+                                        <i class="fas fa-coins stat-icon main-color"></i>
                                     </div>
                                 </div>
                             </div>
@@ -131,12 +131,12 @@ $lowStock = $productManager->getLowStockAlerts(10);
                     </div>
 
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card dashboard-card border-left-success h-100 py-2">
+                        <div class="card dashboard-card paper-bg h-100 py-2" style="border: 1px solid; border-left: 4px solid var(--main);">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Commandes Livrées
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1 secondary-color">
+                                            Les Commandes Livrées
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
                                             <?= $globalStats['delivered_orders'] ?? 0 ?>
@@ -144,7 +144,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                         </div>
                                     </div>
                                     <div class="col-auto">
-                                        <i class="fas fa-truck stat-icon text-success"></i>
+                                        <i class="fas fa-truck stat-icon main-color"></i>
                                     </div>
                                 </div>
                             </div>
@@ -152,19 +152,19 @@ $lowStock = $productManager->getLowStockAlerts(10);
                     </div>
 
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card dashboard-card border-left-info h-100 py-2">
+                        <div class="card dashboard-card paper-bg h-100 py-2" style="border: 1px solid; border-left: 4px solid var(--main);">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            Produits Vendus
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1 secondary-color">
+                                            Total de Produits Vendus
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
                                             <?= $globalStats['total_quantity_sold'] ?? 0 ?>
                                         </div>
                                     </div>
                                     <div class="col-auto">
-                                        <i class="fas fa-box stat-icon text-info"></i>
+                                        <i class="fas fa-box stat-icon main-color"></i>
                                     </div>
                                 </div>
                             </div>
@@ -172,11 +172,11 @@ $lowStock = $productManager->getLowStockAlerts(10);
                     </div>
 
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card dashboard-card border-left-warning h-100 py-2">
+                        <div class="card dashboard-card paper-bg h-100 py-2" style="border: 1px solid; border-left: 4px solid var(--main);">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        <div class="text-xs font-weight-bold text-uppercase mb-1 secondary-color">
                                             Panier Moyen
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
@@ -184,7 +184,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                         </div>
                                     </div>
                                     <div class="col-auto">
-                                        <i class="fas fa-chart-bar stat-icon text-warning"></i>
+                                        <i class="fas fa-chart-bar stat-icon main-color"></i>
                                     </div>
                                 </div>
                             </div>

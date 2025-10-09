@@ -1,10 +1,10 @@
 :root {
 
 --primary: #ce8557;
---secondary: rgb(189, 133, 43);
---paper: #dcc5f5ff;
+--secondary: rgb(90, 63, 20);
+--paper: rgb(222, 204, 241);
 --magenta: rgb(169, 189, 207);
---main: rgb(16, 20, 78);
+--main: rgb(22, 26, 75);
 }
 
 
