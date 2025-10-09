@@ -28,7 +28,6 @@ $analyticsManager = new AnalyticsManager($pdo);
 
 // Obtenir les statistiques avec les nouvelles classes
 $globalStats = $analyticsManager->getGlobalSalesStats($dateFrom, $dateTo);
-
 $topProducts = $analyticsManager->getTopSellingProducts(10, $dateFrom, $dateTo);
 $salesEvolution = $analyticsManager->getSalesEvolution(30);
 $orderStatusStats = $analyticsManager->getOrderStatusStats($dateFrom, $dateTo);
@@ -65,13 +64,13 @@ $lowStock = $productManager->getLowStockAlerts(10);
                 </div>
 
                 <div class="nav flex-column pt-3">
-                    <a class="nav-link active border mb-4" href="index.php">
+                    <a class="nav-link active mb-4" href="index.php">
                         <i class="fas fa-tachometer-alt"></i> Dashboard
                     </a>
-                    <a class="nav-link border mb-4" href="assistant/index.php">
+                    <a class="nav-link mb-4" href="assistant/index.php">
                         <i class="fas fa-users"></i>Assistantes
                     </a>
-                    <a class="nav-link border mb-4" href="finance/index.php">
+                    <a class="nav-link mb-4" href="finance/index.php">
                         <i class="fas fa-coins"></i> Finance
                     </a>
                     <hr class="text-light">
@@ -158,10 +157,10 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-uppercase mb-1 secondary-color">
-                                            Total de Produits Vendus
+                                            Total des dépenses de la période
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <?= $globalStats['total_quantity_sold'] ?? 0 ?>
+                                            <?= $globalStats['total_expenses'] ?? 0 ?> FCFA
                                         </div>
                                     </div>
                                     <div class="col-auto">
@@ -178,7 +177,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-uppercase mb-1 secondary-color">
-                                            Panier Moyen
+                                            Moyenne par Commande livrée
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
                                             <?= $globalStats['average_order_value'] ?> FCFA
