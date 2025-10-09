@@ -67,7 +67,7 @@ $soldProducts = $productManager->getSoldProducts();
                     <h1 class="h2">Inventaire des produits</h1>
                 </div>
 
-                <div class="card">
+                <div class="card mb-5">
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="productsTable" class="table table-striped table-hover">
