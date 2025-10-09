@@ -69,6 +69,9 @@ $lowStock = $productManager->getLowStockAlerts(10);
                     <a class="nav-link mb-4" href="assistant/index.php">
                         <i class="fas fa-users"></i>Assistantes
                     </a>
+                    <a class="nav-link mb-4" href="products/index.php">
+                        <i class="fas fa-box"></i> Inventaire
+                    </a>
                     <a class="nav-link mb-4" href="finance/index.php">
                         <i class="fas fa-coins"></i> Finance
                     </a>

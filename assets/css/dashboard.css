@@ -107,6 +107,14 @@
     animation: fadeInUp 0.6s ease-out;
 }
 
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .sidebar {
