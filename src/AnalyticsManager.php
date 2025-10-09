@@ -24,48 +24,38 @@ class AnalyticsManager
     /**
      * Récupère les statistiques globales de ventes pour une période.
      */
-    public function getGlobalSalesStats($dateFrom, $dateTo)
+    public function getGlobalSalesStats($dateFrom = null, $dateTo = null)
     {
         try {
-            $stmt = $this->pdo->prepare("
-                SELECT 
-                    COUNT(id) as total_orders,
-                    COALESCE(SUM(CASE WHEN newstat = 'deliver' THEN quantity ELSE 0 END), 0) as total_quantity_sold,
-                    COALESCE(SUM(CASE WHEN newstat = 'deliver' THEN total_price ELSE 0 END), 0) as total_revenue,
-                    COALESCE(AVG(CASE WHEN newstat = 'deliver' THEN total_price END), 0) as average_order_value,
-                    COUNT(CASE WHEN newstat = 'deliver' THEN 1 END) as delivered_orders,
-                    COUNT(CASE WHEN newstat = 'canceled' THEN 1 END) as cancelled_orders,
-                    COUNT(CASE WHEN newstat = 'processing' THEN 1 END) as inprogress_orders
-                FROM orders 
-                WHERE created_at BETWEEN ? AND ?
-            ");
-            $stmt->execute([$dateFrom, $dateTo]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $sql = "
+            SELECT 
+                COUNT(id) AS total_orders,
+                COALESCE(SUM(CASE WHEN newstat = 'deliver' THEN quantity ELSE 0 END), 0) AS total_quantity_sold,
+                COALESCE(SUM(CASE WHEN newstat = 'deliver' THEN total_price ELSE 0 END), 0) AS total_revenue,
+                COALESCE(AVG(CASE WHEN newstat = 'deliver' THEN total_price END), 0) AS average_order_value,
+                COUNT(CASE WHEN newstat = 'deliver' THEN 1 END) AS delivered_orders,
+                COUNT(CASE WHEN newstat = 'canceled' THEN 1 END) AS cancelled_orders,
+                COUNT(CASE WHEN newstat = 'processing' THEN 1 END) AS inprogress_orders
+            FROM orders
+        ";
 
-            return $result ?: [
-                'total_orders' => 0,
-                'total_quantity_sold' => 0,
-                'total_revenue' => 0,
-                'average_order_value' => 0,
-                'delivered_orders' => 0,
-                'cancelled_orders' => 0,
-                'confirmed_orders' => 0,
-                'inprogress_orders' => 0
-            ];
+            $params = [];
+
+            if ($dateFrom && $dateTo) {
+                $sql .= " WHERE created_at BETWEEN ? AND ?";
+                $params = [$dateFrom, $dateTo];
+            }
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result;
         } catch (Exception $e) {
-            error_log("Erreur getGlobalSalesStats: " . $e->getMessage());
-            return [
-                'total_orders' => 0,
-                'total_quantity_sold' => 0,
-                'total_revenue' => 0,
-                'average_order_value' => 0,
-                'delivered_orders' => 0,
-                'cancelled_orders' => 0,
-                'confirmed_orders' => 0,
-                'inprogress_orders' => 0
-            ];
+            error_log("Erreur Stats: " . $e->getMessage());
         }
     }
+
+    
 
     /**
      * Récupère les statistiques par statut de commande pour une période.

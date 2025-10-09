@@ -14,49 +14,16 @@ try {
     die("Erreur de connexion à la base de données : " . $e->getMessage());
 }
 
+$dateFrom = $_GET['date_from'] ?? "";
+$dateTo = $_GET['date_to'] ?? "";
+
+
+
 // Instancier les nouveaux managers
 $productManager = new ProductManager($pdo);
 $financeManager = new FinanceManager($pdo);
 $analyticsManager = new AnalyticsManager($pdo);
 
-// Traitement des filtres de date (inchangé)
-$period = $_GET['period'] ?? 'month';
-$dateFrom = $_GET['date_from'] ?? null;
-$dateTo = $_GET['date_to'] ?? null;
-
-if ($period == 'custom' && $dateFrom && $dateTo) {
-    $dateFrom .= ' 00:00:00';
-    $dateTo .= ' 23:59:59';
-} elseif ($period != 'custom') {
-    switch ($period) {
-        case 'day':
-            $dateFrom = date('Y-m-d 00:00:00');
-            $dateTo = date('Y-m-d 23:59:59');
-            break;
-        case 'week':
-            $dateFrom = date('Y-m-d 00:00:00', strtotime('monday this week'));
-            $dateTo = date('Y-m-d 23:59:59', strtotime('sunday this week'));
-            break;
-        case 'month':
-        default:
-            $dateFrom = date('Y-m-01 00:00:00');
-            $dateTo = date('Y-m-t 23:59:59');
-            break;
-        case 'last_month':
-            $dateFrom = date('Y-m-01 00:00:00', strtotime('first day of last month'));
-            $dateTo = date('Y-m-t 23:59:59', strtotime('last day of last month'));
-            break;
-        case 'last_3_months':
-            $dateFrom = date('Y-m-01 00:00:00', strtotime('-2 months'));
-            $dateTo = date('Y-m-t 23:59:59');
-            break;
-    }
-}
-
-// Extraire le mois et l'année pour la procédure stockée
-$summaryDate = new DateTime($dateFrom);
-$summaryMonth = $summaryDate->format('n');
-$summaryYear = $summaryDate->format('Y');
 
 
 // Obtenir les statistiques avec les nouvelles classes
@@ -67,12 +34,7 @@ $orderStatusStats = $analyticsManager->getOrderStatusStats($dateFrom, $dateTo);
 $assistantRanking = $analyticsManager->getAssistantsRanking($dateFrom, $dateTo);
 $lowStock = $productManager->getLowStockAlerts(10);
 
-// Analyse de bénéfices via FinanceManager selon la procédure stockée actuelle (YYYY-MM)
-try {
-    $profitAnalysis = $financeManager->getGlobalProfitability((int)$summaryMonth, (int)$summaryYear);
-} catch (Exception $e) {
-    $profitAnalysis = ['total_revenue' => 0, 'product_costs' => 0, 'delivery_costs' => 0, 'net_profit' => 0, 'profit_margin' => 0];
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -122,31 +84,26 @@ try {
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 magenta-bg">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Tableau de Bord Principal</h1>
-
+                    
                     <!-- Filtres de période -->
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <form method="get" class="d-flex gap-2 align-items-center">
-                            <select name="period" class="form-select form-select-sm" onchange="toggleCustomDates(this.value)">
-                                <option value="day" <?= $period == 'day' ? 'selected' : '' ?>>Aujourd'hui</option>
-                                <option value="week" <?= $period == 'week' ? 'selected' : '' ?>>Cette semaine</option>
-                                <option value="month" <?= $period == 'month' ? 'selected' : '' ?>>Ce mois</option>
-                                <option value="last_month" <?= $period == 'last_month' ? 'selected' : '' ?>>Mois dernier</option>
-                                <option value="last_3_months" <?= $period == 'last_3_months' ? 'selected' : '' ?>>3 derniers mois</option>
-                                <option value="custom" <?= $period == 'custom' ? 'selected' : '' ?>>Période personnalisée</option>
-                            </select>
-
+                        <form method="GET" class="d-flex gap-2 align-items-center">
                             <div id="custom-dates" style="display: <?= $period == 'custom' ? 'flex' : 'none' ?>;" class="d-flex gap-2">
                                 <input type="date" name="date_from" class="form-control form-control-sm"
-                                    value="<?= $period == 'custom' ? ($_GET['date_from'] ?? '') : '' ?>"
+                                    value="<?= $dateFrom ?>"
                                     style="width: 140px;">
                                 <input type="date" name="date_to" class="form-control form-control-sm"
-                                    value="<?= $period == 'custom' ? ($_GET['date_to'] ?? '') : '' ?>"
+                                    value="<?= $dateTo ?>"
                                     style="width: 140px;">
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="fas fa-search"></i> Filtrer
+                                <i class="fas fa-search"></i>
                             </button>
+                            <!-- reset -->
+                            <a href="index.php" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-times"></i>
+                            </a>
                         </form>
                     </div>
                 </div>
