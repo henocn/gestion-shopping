@@ -33,6 +33,7 @@ class AnalyticsManager
                 COALESCE(SUM(CASE WHEN newstat = 'deliver' THEN quantity ELSE 0 END), 0) AS total_quantity_sold,
                 COALESCE(SUM(CASE WHEN newstat = 'deliver' THEN total_price ELSE 0 END), 0) AS total_revenue,
                 COALESCE(AVG(CASE WHEN newstat = 'deliver' THEN total_price END), 0) AS average_order_value,
+                (SELECT COALESCE(SUM(cout), 0) FROM depense) AS total_expenses
                 COUNT(CASE WHEN newstat = 'deliver' THEN 1 END) AS delivered_orders,
                 COUNT(CASE WHEN newstat = 'canceled' THEN 1 END) AS cancelled_orders,
                 COUNT(CASE WHEN newstat = 'processing' THEN 1 END) AS inprogress_orders

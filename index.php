@@ -28,6 +28,7 @@ $analyticsManager = new AnalyticsManager($pdo);
 
 // Obtenir les statistiques avec les nouvelles classes
 $globalStats = $analyticsManager->getGlobalSalesStats($dateFrom, $dateTo);
+
 $topProducts = $analyticsManager->getTopSellingProducts(10, $dateFrom, $dateTo);
 $salesEvolution = $analyticsManager->getSalesEvolution(30);
 $orderStatusStats = $analyticsManager->getOrderStatusStats($dateFrom, $dateTo);
@@ -83,12 +84,12 @@ $lowStock = $productManager->getLowStockAlerts(10);
             <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 magenta-bg">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Tableau de Bord Principal</h1>
+                    <h1 class="h2">Main Dashboard</h1>
                     
                     <!-- Filtres de période -->
-                    <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="mb-2 mb-md-0">
                         <form method="GET" class="d-flex gap-2 align-items-center">
-                            <div id="custom-dates" style="display: <?= $period == 'custom' ? 'flex' : 'none' ?>;" class="d-flex gap-2">
+                            <div class="d-flex gap-2">
                                 <input type="date" name="date_from" class="form-control form-control-sm"
                                     value="<?= $dateFrom ?>"
                                     style="width: 140px;">
@@ -119,11 +120,11 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                             Chiffre d'Affaires Total
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <?= number_format($globalStats['total_revenue'] ?? 0) ?> FCFA
+                                            <?= $globalStats['total_revenue'] ?> FCFA
                                         </div>
                                     </div>
                                     <div class="col-auto">
-                                        <i class="fas fa-coins stat-icon main-color"></i>
+                                        <i class="fas fa-coins stat-icon main-color border"></i>
                                     </div>
                                 </div>
                             </div>
@@ -180,7 +181,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
                                             Panier Moyen
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <?= number_format($globalStats['average_order_value'] ?? 0) ?> FCFA
+                                            <?= $globalStats['average_order_value'] ?> FCFA
                                         </div>
                                     </div>
                                     <div class="col-auto">
