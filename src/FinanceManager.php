@@ -40,7 +40,7 @@ class FinanceManager
     /**
      * Récupère toutes les dépenses pour une période donnée.
      */
-    public function getExpenses($dateFrom, $dateTo)
+    public function getProductExpenses($product_id)
     {
         try {
             $stmt = $this->pdo->prepare("
@@ -54,10 +54,10 @@ class FinanceManager
                     p.name as product_name
                 FROM depense d
                 LEFT JOIN products p ON d.product_id = p.id
-                WHERE d.date BETWEEN ? AND ?
+                WHERE d.product_id = ?
                 ORDER BY d.date DESC
             ");
-            $stmt->execute([$dateFrom, $dateTo]);
+            $stmt->execute([$product_id]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("Erreur getExpenses: " . $e->getMessage());

@@ -3,10 +3,12 @@ require_once '../vendor/autoload.php';
 
 use Src\Connectdb;
 use Src\ProductManager;
+use Src\FinanceManager;
 
 $db = new Connectdb();
 $pdo = $db->getConnection();
 $productManager = new ProductManager($pdo);
+$financeManager = new FinanceManager($pdo);
 
 $lowStockAlerts = $productManager->getLowStockAlerts();
 $soldProducts = $productManager->getSoldProducts();
@@ -109,9 +111,51 @@ $soldProducts = $productManager->getSoldProducts();
                                                     data-bs-target="#expenseModal<?php echo $product['id']; ?>">
                                                     <i class="fas fa-plus-circle"></i>
                                                 </button>
-                                                <button class="btn secondary-bg text-white btn-sm">
+                                                <button 
+                                                    class="btn secondary-bg text-white btn-sm"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#expenses<?php echo $product['id']; ?>"
+                                                    aria-expanded="false"
+                                                    aria-controls="expenses<?php echo $product['id']; ?>">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Ligne extensible pour les dépenses -->
+                                        <tr class="collapse" id="expenses<?php echo $product['id']; ?>">
+                                            <td colspan="9" class="p-0">
+                                                <div class="card card-body border-0 m-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm table-bordered">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th>Montant</th>
+                                                                    <th>Date</th>
+                                                                    <th>Description</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <?php 
+                                                                $expenses = $financeManager->getProductExpenses($product['id']);
+                                                                foreach ($expenses as $expense): 
+                                                                ?>
+                                                                <tr>
+                                                                    <td class="text-end"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
+                                                                    <td><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
+                                                                    <td><?php echo htmlspecialchars($expense['descrption']); ?></td>
+                                                                </tr>
+                                                                <?php endforeach; ?>
+                                                                <?php if (empty($expenses)): ?>
+                                                                <tr>
+                                                                    <td colspan="3" class="text-center">Aucune dépense enregistrée</td>
+                                                                </tr>
+                                                                <?php endif; ?>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
 
