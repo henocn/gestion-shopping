@@ -123,19 +123,17 @@ $soldProducts = $productManager->getSoldProducts();
                                                     <div class="modal-body">
                                                         <form action="save.php" method="POST">
                                                             <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                                                            <input type="hidden" name="date" value="<?php echo date('Y-m-d H:i:s'); ?>">
-                                                            <input type="hidden" name="type" value="products">
                                                             <div class="mb-3">
                                                                 <label for="cout<?php echo $product['id']; ?>" class="form-label">Montant de la dépense</label>
                                                                 <input type="number" class="form-control" id="cout<?php echo $product['id']; ?>" name="cout" step="0.01" required>
                                                             </div>
                                                             <div class="mb-3">
                                                                 <label for="description<?php echo $product['id']; ?>" class="form-label">Description</label>
-                                                                <textarea class="form-control" id="description<?php echo $product['id']; ?>" name="description" rows="3" required></textarea>
+                                                                <textarea class="form-control" id="description<?php echo $product['id']; ?>" name="description" rows="3"></textarea>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                                <button type="submit" class="btn main-bg text-white">Enregistrer</button>
+                                                                <input type="submit" value="Créer dépense" name="valider" class="btn main-bg text-white">
                                                             </div>
                                                         </form>
                                                     </div>

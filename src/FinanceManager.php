@@ -24,13 +24,13 @@ class FinanceManager
     /**
      * Enregistre une dépense liée à un produit (ex: frais de livraison).
      */
-    public function recordProductExpense($productId, $amount, $description, $date = null)
+    public function recordProductExpense($productId, $amount, $description)
     {
         try {
             $stmt = $this->pdo->prepare(
-                "INSERT INTO depense (type, product_id, cout, date, descrption) VALUES ('products', ?, ?, ?, ?)"
+                "INSERT INTO depense (type, product_id, cout, descrption) VALUES ('products', ?, ?, ?)"
             );
-            return $stmt->execute([$productId, $amount, $date ?? date('Y-m-d H:i:s'), $description]);
+            return $stmt->execute([$productId, $amount, $description]);
         } catch (Exception $e) {
             error_log("Erreur recordProductExpense: " . $e->getMessage());
             return false;

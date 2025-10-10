@@ -1,59 +1,55 @@
 <?php
+session_start();
 require_once '../vendor/autoload.php';
 
 use Src\Connectdb;
+use Src\FinanceManager;
 
-session_start();
+$db = new Connectdb();
+$pdo = $db->getConnection();
+$financeManager = new FinanceManager($pdo);
 
-try {
-    // Vérification des données requises
-    $requiredFields = ['product_id', 'type', 'cout', 'description'];
-    $missingFields = [];
-    
-    foreach ($requiredFields as $field) {
-        if (!isset($_POST[$field]) || empty($_POST[$field])) {
-            $missingFields[] = $field;
+
+if (!isset($_POST['valider'])) {
+    header('Location: index.php?error=401');
+    exit;
+}
+echo("debug");
+
+$action = $_POST['valider'];
+
+switch ($action) {
+    case 'Créer dépense':
+
+        if (
+            isset($_POST['product_id']) && !empty($_POST['product_id']) &&
+            isset($_POST['cout']) && !empty($_POST['cout']) &&
+            isset($_POST['description'])
+        ) {
+            // Nettoyage des données
+            $productId = filter_input(INPUT_POST, 'product_id', FILTER_SANITIZE_NUMBER_INT);
+            $amount = filter_input(INPUT_POST, 'cout', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+            $description = filter_input(INPUT_POST, 'description');
+
+            try {
+                if ($financeManager->recordProductExpense($productId, $amount,$description)) {
+                    $_SESSION['success'] = "La dépense a été enregistrée avec succès";
+                    header('Location: index.php');
+                } else {
+                    $_SESSION['error'] = "Erreur lors de l'enregistrement de la dépense";
+                    header('Location: index.php');
+                }
+            } catch (Exception $e) {
+                $_SESSION['error'] = "Erreur : " . $e->getMessage();
+                header('Location: index.php');
+            }
+        } else {
+            $_SESSION['error'] = "Tous les champs sont obligatoires";
+            header('Location: index.php');
         }
-    }
-    
-    if (!empty($missingFields)) {
-        throw new Exception('Champs manquants : ' . implode(', ', $missingFields));
-    }
+        break;
 
-    // Récupération et nettoyage des données
-    $product_id = filter_input(INPUT_POST, 'product_id', FILTER_SANITIZE_NUMBER_INT);
-    $type = filter_input(INPUT_POST, 'type', FILTER_SANITIZE_STRING);
-    $cout = filter_input(INPUT_POST, 'cout', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-    $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_STRING);
-    $date = date('Y-m-d H:i:s'); // Date actuelle
-
-    // Validation supplémentaire
-    if (!$product_id || !$cout) {
-        throw new Exception('Données invalides');
-    }
-
-    // Vérifier que le type est "products"
-    if ($type !== 'products') {
-        throw new Exception('Type de dépense non valide');
-    }
-
-    // Connexion à la base de données
-    $db = new Connectdb();
-    $pdo = $db->getConnection();
-
-    // Préparation et exécution de la requête
-    $sql = "INSERT INTO expenses (product_id, type, cout, description, date) VALUES (?, ?, ?, ?, ?)";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$product_id, $type, $cout, $description, $date]);
-
-    // Message de succès et redirection
-    $_SESSION['success'] = 'Dépense enregistrée avec succès';
-    header('Location: index.php');
-    exit();
-
-} catch (Exception $e) {
-    // En cas d'erreur, stocker le message et rediriger
-    $_SESSION['error'] = $e->getMessage();
-    header('Location: index.php');
-    exit();
+    default:
+        $_SESSION['error'] = "Action non reconnue";
+        break;
 }
