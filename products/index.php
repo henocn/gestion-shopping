@@ -114,6 +114,17 @@ $soldProducts = $productManager->getSoldProducts();
             font-weight: bold;
             margin-bottom: 5px;
         }
+        .stat-subvalue {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: -5px;
+        }
+        .stat-subvalue.text-success {
+            color: #98ff98 !important;
+        }
+        .stat-subvalue.text-danger {
+            color: #ffb3b3 !important;
+        }
         .stat-item::after {
             content: '';
             position: absolute;
@@ -171,27 +182,52 @@ $soldProducts = $productManager->getSoldProducts();
                 <!-- Résumé statistique -->
                 <div class="stats-container mb-4">
                     <div class="row g-4">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stat-item">
                                 <h3><i class="fas fa-shopping-cart me-2"></i>Total Achats</h3>
                                 <div class="stat-value" id="totalAchats">
-                                    <?php echo number_format($productManager->getTotalPurchaseAmount(), 0, ',', ' '); ?> F
+                                    <?php 
+                                    $totalAchats = $productManager->getTotalPurchaseAmount();
+                                    echo number_format($totalAchats, 0, ',', ' '); 
+                                    ?> F
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stat-item">
                                 <h3><i class="fas fa-file-invoice-dollar me-2"></i>Total Dépenses</h3>
                                 <div class="stat-value" id="totalDepenses">
-                                    <?php echo number_format($financeManager->getTotalExpensesByType('products'), 0, ',', ' '); ?> F
+                                    <?php 
+                                    $totalDepenses = $financeManager->getTotalExpensesByType('products');
+                                    echo number_format($totalDepenses, 0, ',', ' '); 
+                                    ?> F
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="stat-item">
                                 <h3><i class="fas fa-cash-register me-2"></i>Total Ventes</h3>
                                 <div class="stat-value" id="totalVentes">
-                                    <?php echo number_format($productManager->getTotalSalesAmount(), 0, ',', ' '); ?> F
+                                    <?php 
+                                    $totalVentes = $productManager->getTotalSalesAmount();
+                                    echo number_format($totalVentes, 0, ',', ' '); 
+                                    ?> F
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3><i class="fas fa-chart-line me-2"></i>Bénéfice Total</h3>
+                                <?php
+                                $beneficeTotal = $totalVentes - ($totalAchats + $totalDepenses);
+                                $rendement = ($totalAchats > 0) ? ($beneficeTotal / $totalAchats) * 100 : 0;
+                                $profitClass = $beneficeTotal >= 0 ? 'text-success' : 'text-danger';
+                                ?>
+                                <div class="stat-value <?php echo $profitClass; ?>">
+                                    <?php echo number_format($beneficeTotal, 0, ',', ' '); ?> F
+                                </div>
+                                <div class="stat-subvalue <?php echo $profitClass; ?>">
+                                    Rendement: <?php echo number_format($rendement, 2, ',', ' '); ?>%
                                 </div>
                             </div>
                         </div>
