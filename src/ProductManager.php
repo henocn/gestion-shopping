@@ -86,4 +86,44 @@ class ProductManager
             return [];
         }
     }
+
+    /**
+     * Récupère le montant total des achats
+     */
+    public function getTotalPurchaseAmount()
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT SUM(unit_price * quantity) as total
+                FROM orders
+                WHERE newstat = 'deliver'
+            ");
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            error_log("Erreur getTotalPurchaseAmount: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Récupère le montant total des ventes
+     */
+    public function getTotalSalesAmount()
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT SUM(total_price) as total
+                FROM orders
+                WHERE newstat = 'deliver'
+            ");
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            error_log("Erreur getTotalSalesAmount: " . $e->getMessage());
+            return 0;
+        }
+    }
 }

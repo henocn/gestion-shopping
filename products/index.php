@@ -56,6 +56,74 @@ $soldProducts = $productManager->getSoldProducts();
             border-color: var(--secondary) !important;
             color: white !important;
         }
+
+        /* Style pour les notifications toast */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .custom-toast {
+            background-color: var(--main);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .custom-toast.show {
+            opacity: 1;
+        }
+        .custom-toast.success {
+            background-color: #28a745;
+        }
+        .custom-toast.error {
+            background-color: #dc3545;
+        }
+
+        /* Style pour le résumé statistique */
+        .stats-container {
+            background: linear-gradient(135deg, var(--main) 0%, var(--secondary) 100%);
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .stat-item {
+            position: relative;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+        .stat-item h3 {
+            font-size: 1rem;
+            margin-bottom: 7px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0 0 8px 8px;
+        }
     </style>
 </head>
 
@@ -93,8 +161,41 @@ $soldProducts = $productManager->getSoldProducts();
 
             <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 magenta-bg">
+                <!-- Container pour les notifications toast -->
+                <div class="toast-container"></div>
+
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Inventaire des produits</h1>
+                </div>
+
+                <!-- Résumé statistique -->
+                <div class="stats-container mb-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <h3><i class="fas fa-shopping-cart me-2"></i>Total Achats</h3>
+                                <div class="stat-value" id="totalAchats">
+                                    <?php echo number_format($productManager->getTotalPurchaseAmount(), 0, ',', ' '); ?> F
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <h3><i class="fas fa-file-invoice-dollar me-2"></i>Total Dépenses</h3>
+                                <div class="stat-value" id="totalDepenses">
+                                    <?php echo number_format($financeManager->getTotalExpensesByType('products'), 0, ',', ' '); ?> F
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-item">
+                                <h3><i class="fas fa-cash-register me-2"></i>Total Ventes</h3>
+                                <div class="stat-value" id="totalVentes">
+                                    <?php echo number_format($productManager->getTotalSalesAmount(), 0, ',', ' '); ?> F
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card mb-5">
@@ -247,7 +348,36 @@ $soldProducts = $productManager->getSoldProducts();
     <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap5.min.js"></script>
 
     <script>
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+
+            // Animation d'apparition
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            // Disparition après 5 secondes
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Fonction pour vérifier si on vient d'ajouter une dépense
+        function checkForNewExpense() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'expense') {
+                showToast('La dépense a été ajoutée avec succès !');
+                // Nettoyer l'URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
         $(document).ready(function() {
+            // Vérifier si une dépense vient d'être ajoutée
+            checkForNewExpense();
             // Initialisation du tableau principal
             $('#productsTable').DataTable({
                 language: {

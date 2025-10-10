@@ -34,7 +34,7 @@ switch ($action) {
             try {
                 if ($financeManager->recordProductExpense($productId, $amount,$description)) {
                     $_SESSION['success'] = "La dépense a été enregistrée avec succès";
-                    header('Location: index.php');
+                    header('Location: index.php?success=expense');
                 } else {
                     $_SESSION['error'] = "Erreur lors de l'enregistrement de la dépense";
                     header('Location: index.php');

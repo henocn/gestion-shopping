@@ -90,6 +90,25 @@ class FinanceManager
     }
 
     /**
+     * Récupère le total des dépenses par type
+     */
+    public function getTotalExpensesByType($type)
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT COALESCE(SUM(cout), 0) as total
+                FROM depense
+                WHERE type = ?
+            ");
+            $stmt->execute([$type]);
+            return (float) $stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("Erreur getTotalExpensesByType: " . $e->getMessage());
+            return 0.0;
+        }
+    }
+
+    /**
      * Récupère le total des dépenses pour une période.
      */
     public function getTotalExpenses($dateFrom, $dateTo)
