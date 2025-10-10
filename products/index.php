@@ -24,11 +24,39 @@ $soldProducts = $productManager->getSoldProducts();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventaire des produits</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <link href="../assets/css/dashboard.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .dataTables_wrapper .dataTables_filter input {
+            margin-left: 0.5em;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            padding: 0.375rem 0.75rem;
+        }
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--main) !important;
+            border-color: var(--main) !important;
+            color: white !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: var(--secondary) !important;
+            border-color: var(--secondary) !important;
+            color: white !important;
+        }
+    </style>
 </head>
 
 <body class="bg-light">
@@ -204,10 +232,15 @@ $soldProducts = $productManager->getSoldProducts();
         </div>
     </div>
 
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -216,17 +249,29 @@ $soldProducts = $productManager->getSoldProducts();
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
                 },
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                     "<'row'<'col-sm-12'tr>>" +
+                     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                 order: [[0, 'desc']],
                 responsive: true,
                 pageLength: 25,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tous"]],
+                columnDefs: [
+                    { orderable: true, targets: '_all' },
+                    { searchable: false, targets: [0, 2, 3, 4, 5, 6, 7, 8] }
+                ],
                 drawCallback: function(settings) {
-                    // Réinitialiser les lignes de dépenses lors du tri/filtrage
                     $('.collapse').collapse('hide');
                 }
             });
 
             // Gérer les lignes de dépenses lors du tri et de la pagination
             table.on('draw', function() {
+                $('.collapse').collapse('hide');
+            });
+
+            // Réinitialiser les lignes extensibles lors de la recherche
+            $('.dataTables_filter input').on('keyup', function() {
                 $('.collapse').collapse('hide');
             });
         });
