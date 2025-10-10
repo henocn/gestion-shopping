@@ -129,19 +129,18 @@ $soldProducts = $productManager->getSoldProducts();
                             </div>
                             <div class="modal-body">
                                 <form id="expenseForm">
-                                    <input type="hidden" id="productId" name="productId">
+                                    <input type="hidden" id="productId" name="product_id">
+                                    <input type="hidden" id="productName" name="productName">
+                                    <input type="hidden" id="type" name="type" value="products" required>
                                     <div class="mb-3">
-                                        <label for="productName" class="form-label">Produit</label>
-                                        <input type="text" class="form-control" id="productName" readonly>
+                                        <label for="cout" class="form-label">Montant de la dépense</label>
+                                        <input type="number" class="form-control" id="cout" name="cout" step="0.01" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="expenseAmount" class="form-label">Montant de la dépense</label>
-                                        <input type="number" class="form-control" id="expenseAmount" name="expenseAmount" step="0.01" required>
+                                        <label for="description" class="form-label">Description</label>
+                                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="expenseDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="expenseDescription" name="expenseDescription" rows="3" required></textarea>
-                                    </div>
+                                    <input type="hidden" name="date" value="<?php echo date('Y-m-d H:i:s'); ?>">
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -185,13 +184,15 @@ $soldProducts = $productManager->getSoldProducts();
             // Gestion de la soumission du formulaire de dépense
             $('#saveExpense').on('click', function() {
                 const formData = {
-                    productId: $('#productId').val(),
-                    amount: $('#expenseAmount').val(),
-                    description: $('#expenseDescription').val()
+                    product_id: $('#productId').val(),
+                    type: $('#type').val(),
+                    cout: $('#cout').val(),
+                    description: $('#description').val(),
+                    date: $('input[name="date"]').val()
                 };
 
-                if (!formData.amount || !formData.description) {
-                    alert('Veuillez remplir tous les champs');
+                if (!formData.type || !formData.cout || !formData.description) {
+                    alert('Veuillez remplir tous les champs obligatoires');
                     return;
                 }
 
