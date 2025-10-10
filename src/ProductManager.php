@@ -54,19 +54,29 @@ class ProductManager
     {
         try {
             $stmt = $this->pdo->prepare("
+            WITH product_expenses AS (
+                SELECT 
+                    product_id,
+                    COALESCE(SUM(cout), 0) as total_expenses
+                FROM depense 
+                WHERE type = 'products'
+                GROUP BY product_id
+            )
             SELECT 
                 p.id,
                 p.name,
                 SUM(o.unit_price * o.quantity) AS cost_price,
                 SUM(o.total_price) AS total_selling_price,
                 SUM(o.quantity) AS total_sold,
-                ((SUM(o.total_price) - SUM(o.unit_price * o.quantity))/SUM(o.quantity)) AS avg_profit_per_unit,
-                (SUM(o.total_price) - SUM(o.unit_price * o.quantity)) AS total_profit,
-                ROUND(((SUM(o.total_price) - SUM(o.unit_price * o.quantity)) / SUM(o.unit_price * o.quantity)) * 100, 2) AS rendement
+                COALESCE(pe.total_expenses, 0) as total_expenses,
+                ((SUM(o.total_price) - (SUM(o.unit_price * o.quantity) + COALESCE(pe.total_expenses, 0)))/SUM(o.quantity)) AS avg_profit_per_unit,
+                (SUM(o.total_price) - (SUM(o.unit_price * o.quantity) + COALESCE(pe.total_expenses, 0))) AS total_profit,
+                ROUND(((SUM(o.total_price) - (SUM(o.unit_price * o.quantity) + COALESCE(pe.total_expenses, 0))) / SUM(o.unit_price * o.quantity)) * 100, 2) AS rendement
             FROM orders o
             JOIN products p ON o.product_id = p.id
+            LEFT JOIN product_expenses pe ON p.id = pe.product_id
             WHERE o.newstat = 'deliver'
-            GROUP BY p.id, p.name
+            GROUP BY p.id, p.name, pe.total_expenses
             ORDER BY total_sold DESC
         ");
             $stmt->execute();

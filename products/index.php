@@ -70,7 +70,7 @@ $soldProducts = $productManager->getSoldProducts();
                 <div class="card mb-5">
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="productsTable" class="table table-striped table-hover">
+                            <table id="productsTable" class="table table-striped table-hover table-bordered">
                                 <thead>
                                     <tr>
                                         <th>Rendement</th>
@@ -78,9 +78,10 @@ $soldProducts = $productManager->getSoldProducts();
                                         <th>Qté vendue</th>
                                         <th>P.T. Achat</th>
                                         <th>P.T. Vente</th>
+                                        <th>T. Dép.</th>
                                         <th>B.M/unité</th>
                                         <th>Bénéfice total</th>
-                                        <th>Actions</th>
+                                        <th>Dépenses</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,6 +95,7 @@ $soldProducts = $productManager->getSoldProducts();
                                             <td><?php echo number_format($product['total_sold'], 0, ',', ' '); ?></td>
                                             <td><?php echo number_format($product['cost_price'], 0, ',', ' '); ?> F</td>
                                             <td><?php echo number_format($product['total_selling_price'], 0, ',', ' '); ?> F</td>
+                                            <td><?php echo number_format($product['total_expenses'], 0, ',', ' '); ?> F</td>
                                             <td class="<?php echo $profitClass; ?>">
                                                 <?php echo number_format($product['avg_profit_per_unit'], 0, ',', ' '); ?> F
                                             </td>
@@ -105,7 +107,10 @@ $soldProducts = $productManager->getSoldProducts();
                                                     class="btn main-bg text-white btn-sm"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#expenseModal<?php echo $product['id']; ?>">
-                                                    <i class="fas fa-plus-circle"></i> Dépense
+                                                    <i class="fas fa-plus-circle"></i>
+                                                </button>
+                                                <button class="btn secondary-bg text-white btn-sm">
+                                                    <i class="fas fa-info-circle"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -116,11 +121,11 @@ $soldProducts = $productManager->getSoldProducts();
                                                 <div class="modal-content">
                                                     <div class="modal-header main-bg text-white">
                                                         <h5 class="modal-title" id="expenseModalLabel<?php echo $product['id']; ?>">
-                                                            Ajouter une dépense pour <?php echo htmlspecialchars($product['name']); ?>
+                                                            Ajouter une dépense pour <b class="primary-color"><?php echo htmlspecialchars($product['name']); ?></b>
                                                         </h5>
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
-                                                    <div class="modal-body">
+                                                    <div class="modal-body paper-bg">
                                                         <form action="save.php" method="POST">
                                                             <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
                                                             <div class="mb-3">
