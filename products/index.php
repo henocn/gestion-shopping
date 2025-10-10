@@ -31,111 +31,10 @@ $soldProducts = $productManager->getSoldProducts();
     <!-- Custom CSS -->
     <link href="../assets/css/dashboard.css" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet">
+    <link href="../assets/css/products.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css" rel="stylesheet">
-    <style>
-        .dataTables_wrapper .dataTables_filter input {
-            margin-left: 0.5em;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-            padding: 0.375rem 0.75rem;
-        }
-        .dataTables_wrapper .dataTables_length select {
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-            padding: 0.375rem 1.75rem 0.375rem 0.75rem;
-        }
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: var(--main) !important;
-            border-color: var(--main) !important;
-            color: white !important;
-        }
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background: var(--secondary) !important;
-            border-color: var(--secondary) !important;
-            color: white !important;
-        }
-
-        /* Style pour les notifications toast */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-        .custom-toast {
-            background-color: var(--main);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            margin-bottom: 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .custom-toast.show {
-            opacity: 1;
-        }
-        .custom-toast.success {
-            background-color: #28a745;
-        }
-        .custom-toast.error {
-            background-color: #dc3545;
-        }
-
-        /* Style pour le résumé statistique */
-        .stats-container {
-            background: linear-gradient(135deg, var(--main) 0%, var(--secondary) 100%);
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        .stat-item {
-            position: relative;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
-        }
-        .stat-item:hover {
-            transform: translateY(-5px);
-        }
-        .stat-item h3 {
-            font-size: 1rem;
-            margin-bottom: 7px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .stat-subvalue {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: -5px;
-        }
-        .stat-subvalue.text-success {
-            color: #98ff98 !important;
-        }
-        .stat-subvalue.text-danger {
-            color: #ffb3b3 !important;
-        }
-        .stat-item::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 0 0 8px 8px;
-        }
-    </style>
 </head>
 
 <body class="bg-light">
@@ -186,9 +85,9 @@ $soldProducts = $productManager->getSoldProducts();
                             <div class="stat-item">
                                 <h3><i class="fas fa-shopping-cart me-2"></i>Total Achats</h3>
                                 <div class="stat-value" id="totalAchats">
-                                    <?php 
+                                    <?php
                                     $totalAchats = $productManager->getTotalPurchaseAmount();
-                                    echo number_format($totalAchats, 0, ',', ' '); 
+                                    echo number_format($totalAchats, 0, ',', ' ');
                                     ?> F
                                 </div>
                             </div>
@@ -197,9 +96,9 @@ $soldProducts = $productManager->getSoldProducts();
                             <div class="stat-item">
                                 <h3><i class="fas fa-file-invoice-dollar me-2"></i>Total Dépenses</h3>
                                 <div class="stat-value" id="totalDepenses">
-                                    <?php 
+                                    <?php
                                     $totalDepenses = $financeManager->getTotalExpensesByType('products');
-                                    echo number_format($totalDepenses, 0, ',', ' '); 
+                                    echo number_format($totalDepenses, 0, ',', ' ');
                                     ?> F
                                 </div>
                             </div>
@@ -208,9 +107,9 @@ $soldProducts = $productManager->getSoldProducts();
                             <div class="stat-item">
                                 <h3><i class="fas fa-cash-register me-2"></i>Total Ventes</h3>
                                 <div class="stat-value" id="totalVentes">
-                                    <?php 
+                                    <?php
                                     $totalVentes = $productManager->getTotalSalesAmount();
-                                    echo number_format($totalVentes, 0, ',', ' '); 
+                                    echo number_format($totalVentes, 0, ',', ' ');
                                     ?> F
                                 </div>
                             </div>
@@ -221,13 +120,15 @@ $soldProducts = $productManager->getSoldProducts();
                                 <?php
                                 $beneficeTotal = $totalVentes - ($totalAchats + $totalDepenses);
                                 $rendement = ($totalAchats > 0) ? ($beneficeTotal / $totalAchats) * 100 : 0;
-                                $profitClass = $beneficeTotal >= 0 ? 'text-success' : 'text-danger';
+                                $profitClass = $beneficeTotal >= 0 ? 'success' : 'danger';
                                 ?>
-                                <div class="stat-value <?php echo $profitClass; ?>">
-                                    <?php echo number_format($beneficeTotal, 0, ',', ' '); ?> F
-                                </div>
-                                <div class="stat-subvalue <?php echo $profitClass; ?>">
-                                    Rendement: <?php echo number_format($rendement, 2, ',', ' '); ?>%
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="stat-value <?php echo $profitClass; ?>">
+                                        <?php echo number_format($beneficeTotal, 0, ',', ' '); ?> F
+                                    </div>
+                                    <div class="stat-subvalue <?php echo $profitClass; ?>">
+                                        Rendement: <?php echo number_format($rendement, 2, ',', ' '); ?>%
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -276,7 +177,7 @@ $soldProducts = $productManager->getSoldProducts();
                                                     data-bs-target="#expenseModal<?php echo $product['id']; ?>">
                                                     <i class="fas fa-plus-circle"></i>
                                                 </button>
-                                                <button 
+                                                <button
                                                     class="btn secondary-bg text-white btn-sm"
                                                     type="button"
                                                     data-bs-toggle="modal"
@@ -324,50 +225,50 @@ $soldProducts = $productManager->getSoldProducts();
                 </div>
 
                 <?php foreach ($soldProducts as $product): ?>
-                <!-- Modal Liste des dépenses -->
-                <div class="modal fade" id="expensesListModal<?php echo $product['id']; ?>" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header main-bg text-white">
-                                <h5 class="modal-title">
-                                    Liste des dépenses - <?php echo htmlspecialchars($product['name']); ?>
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped table-bordered expenses-table" style="width:100%">
-                                        <thead class="main-bg text-white">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Description</th>
-                                                <th>Montant</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php 
-                                            $expenses = $financeManager->getProductExpenses($product['id']);
-                                            foreach ($expenses as $expense): 
-                                            ?>
-                                            <tr>
-                                                <td class="text-center"><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
-                                                <td><?php echo htmlspecialchars($expense['descrption']); ?></td>
-                                                <td class="text-end"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                        <tfoot class="secondary-bg text-white">
-                                            <tr>
-                                                <th colspan="2" class="text-end">Total</th>
-                                                <th class="text-end"><?php echo number_format($product['total_expenses'], 0, ',', ' '); ?> F</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                    <!-- Modal Liste des dépenses -->
+                    <div class="modal fade" id="expensesListModal<?php echo $product['id']; ?>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header main-bg text-white">
+                                    <h5 class="modal-title">
+                                        Liste des dépenses - <?php echo htmlspecialchars($product['name']); ?>
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered expenses-table" style="width:100%">
+                                            <thead class="main-bg text-white">
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Description</th>
+                                                    <th>Montant</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                $expenses = $financeManager->getProductExpenses($product['id']);
+                                                foreach ($expenses as $expense):
+                                                ?>
+                                                    <tr>
+                                                        <td class="text-center"><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
+                                                        <td><?php echo htmlspecialchars($expense['descrption']); ?></td>
+                                                        <td class="text-end"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                            <tfoot class="secondary-bg text-white">
+                                                <tr>
+                                                    <th colspan="2" class="text-end">Total</th>
+                                                    <th class="text-end"><?php echo number_format($product['total_expenses'], 0, ',', ' '); ?> F</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 <?php endforeach; ?>
             </main>
         </div>
@@ -420,14 +321,24 @@ $soldProducts = $productManager->getSoldProducts();
                     url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
                 },
                 dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                     "<'row'<'col-sm-12'tr>>" +
-                     "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-                order: [[0, 'desc']],
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                order: [
+                    [0, 'desc']
+                ],
                 pageLength: 25,
-                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tous"]],
-                columnDefs: [
-                    { orderable: true, targets: '_all' },
-                    { searchable: false, targets: [0, 2, 3, 4, 5, 6, 7, 8] }
+                lengthMenu: [
+                    [10, 25, 50, -1],
+                    [10, 25, 50, "Tous"]
+                ],
+                columnDefs: [{
+                        orderable: true,
+                        targets: '_all'
+                    },
+                    {
+                        searchable: false,
+                        targets: [0, 2, 3, 4, 5, 6, 7, 8]
+                    }
                 ]
             });
 
@@ -438,14 +349,17 @@ $soldProducts = $productManager->getSoldProducts();
                         url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
                     },
                     dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                         "<'row'<'col-sm-12'tr>>" +
-                         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                     pageLength: 10,
                     ordering: true,
-                    order: [[0, 'desc']],
-                    columnDefs: [
-                        { type: 'date', targets: 0 }
-                    ]
+                    order: [
+                        [0, 'desc']
+                    ],
+                    columnDefs: [{
+                        type: 'date',
+                        targets: 0
+                    }]
                 });
             });
 
