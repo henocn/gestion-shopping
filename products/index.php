@@ -126,14 +126,14 @@ $soldProducts = $productManager->getSoldProducts();
                                         <!-- Ligne extensible pour les dépenses -->
                                         <tr class="collapse" id="expenses<?php echo $product['id']; ?>">
                                             <td colspan="9" class="p-0">
-                                                <div class="card card-body border-0 m-0">
+                                                <div class="mx-4 my-2">
                                                     <div class="table-responsive">
-                                                        <table class="table table-sm table-bordered">
-                                                            <thead class="table-light">
-                                                                <tr>
-                                                                    <th>Montant</th>
-                                                                    <th>Date</th>
-                                                                    <th>Description</th>
+                                                        <table class="table table-sm table-bordered mb-0">
+                                                            <thead class="main-bg text-white">
+                                                                <tr class="text-center">
+                                                                    <th style="width: 20%">Date</th>
+                                                                    <th style="width: 60%">Description</th>
+                                                                    <th style="width: 20%">Montant</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -142,14 +142,19 @@ $soldProducts = $productManager->getSoldProducts();
                                                                 foreach ($expenses as $expense): 
                                                                 ?>
                                                                 <tr>
-                                                                    <td class="text-end"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
-                                                                    <td><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
-                                                                    <td><?php echo htmlspecialchars($expense['descrption']); ?></td>
+                                                                    <td class="text-center align-middle"><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
+                                                                    <td class="align-middle"><?php echo htmlspecialchars($expense['descrption']); ?></td>
+                                                                    <td class="text-end align-middle"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
                                                                 </tr>
                                                                 <?php endforeach; ?>
                                                                 <?php if (empty($expenses)): ?>
                                                                 <tr>
                                                                     <td colspan="3" class="text-center">Aucune dépense enregistrée</td>
+                                                                </tr>
+                                                                <?php else: ?>
+                                                                <tr class="secondary-bg text-white">
+                                                                    <td colspan="2" class="text-end pe-3"><strong>Total des dépenses</strong></td>
+                                                                    <td class="text-end"><strong><?php echo number_format($product['total_expenses'], 0, ',', ' '); ?> F</strong></td>
                                                                 </tr>
                                                                 <?php endif; ?>
                                                             </tbody>
@@ -207,14 +212,22 @@ $soldProducts = $productManager->getSoldProducts();
     <script>
         $(document).ready(function() {
             // Initialisation de DataTables
-            $('#productsTable').DataTable({
+            var table = $('#productsTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
                 },
-                order: [
-                    [1, 'desc']
-                ],
-                responsive: true
+                order: [[0, 'desc']],
+                responsive: true,
+                pageLength: 25,
+                drawCallback: function(settings) {
+                    // Réinitialiser les lignes de dépenses lors du tri/filtrage
+                    $('.collapse').collapse('hide');
+                }
+            });
+
+            // Gérer les lignes de dépenses lors du tri et de la pagination
+            table.on('draw', function() {
+                $('.collapse').collapse('hide');
             });
         });
     </script>
