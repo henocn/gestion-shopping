@@ -276,14 +276,13 @@ $soldProducts = $productManager->getSoldProducts();
                          "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                     pageLength: 10,
                     ordering: true,
-                    order: [[0, 'desc']], // Tri par date décroissante
+                    order: [[0, 'desc']],
                     columnDefs: [
                         { type: 'date', targets: 0 }
                     ]
                 });
             });
 
-            // Réinitialiser les DataTables des dépenses lors de la fermeture des modals
             $('.modal').on('hidden.bs.modal', function() {
                 $(this).find('.expenses-table').DataTable().search('').draw();
             });
