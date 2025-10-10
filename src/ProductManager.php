@@ -60,7 +60,7 @@ class ProductManager
                 SUM(o.unit_price * o.quantity) AS cost_price,
                 SUM(o.total_price) AS total_selling_price,
                 SUM(o.quantity) AS total_sold,
-                (AVG(o.total_price / o.quantity) - AVG(o.unit_price)) AS avg_profit_per_unit,
+                ((SUM(o.total_price) - SUM(o.unit_price * o.quantity))/SUM(o.quantity)) AS avg_profit_per_unit,
                 (SUM(o.total_price) - SUM(o.unit_price * o.quantity)) AS total_profit,
                 ROUND(((SUM(o.total_price) - SUM(o.unit_price * o.quantity)) / SUM(o.unit_price * o.quantity)) * 100, 2) AS rendement
             FROM orders o
