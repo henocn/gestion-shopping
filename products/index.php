@@ -142,57 +142,14 @@ $soldProducts = $productManager->getSoldProducts();
                                                 <button 
                                                     class="btn secondary-bg text-white btn-sm"
                                                     type="button"
-                                                    data-bs-toggle="collapse"
-                                                    data-bs-target="#expenses<?php echo $product['id']; ?>"
-                                                    aria-expanded="false"
-                                                    aria-controls="expenses<?php echo $product['id']; ?>">
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#expensesListModal<?php echo $product['id']; ?>">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
                                             </td>
                                         </tr>
-                                        
-                                        <!-- Ligne extensible pour les dépenses -->
-                                        <tr class="collapse" id="expenses<?php echo $product['id']; ?>">
-                                            <td colspan="9" class="p-0">
-                                                <div class="mx-4 my-2">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-sm table-bordered mb-0">
-                                                            <thead class="main-bg text-white">
-                                                                <tr class="text-center">
-                                                                    <th style="width: 20%">Date</th>
-                                                                    <th style="width: 60%">Description</th>
-                                                                    <th style="width: 20%">Montant</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <?php 
-                                                                $expenses = $financeManager->getProductExpenses($product['id']);
-                                                                foreach ($expenses as $expense): 
-                                                                ?>
-                                                                <tr>
-                                                                    <td class="text-center align-middle"><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
-                                                                    <td class="align-middle"><?php echo htmlspecialchars($expense['descrption']); ?></td>
-                                                                    <td class="text-end align-middle"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
-                                                                </tr>
-                                                                <?php endforeach; ?>
-                                                                <?php if (empty($expenses)): ?>
-                                                                <tr>
-                                                                    <td colspan="3" class="text-center">Aucune dépense enregistrée</td>
-                                                                </tr>
-                                                                <?php else: ?>
-                                                                <tr class="secondary-bg text-white">
-                                                                    <td colspan="2" class="text-end pe-3"><strong>Total des dépenses</strong></td>
-                                                                    <td class="text-end"><strong><?php echo number_format($product['total_expenses'], 0, ',', ' '); ?> F</strong></td>
-                                                                </tr>
-                                                                <?php endif; ?>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
 
-                                        <!-- Modal pour chaque produit -->
+                                        <!-- Modal pour ajouter une dépense -->
                                         <div class="modal fade" id="expenseModal<?php echo $product['id']; ?>" tabindex="-1" aria-labelledby="expenseModalLabel<?php echo $product['id']; ?>" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -228,6 +185,53 @@ $soldProducts = $productManager->getSoldProducts();
                         </div>
                     </div>
                 </div>
+
+                <?php foreach ($soldProducts as $product): ?>
+                <!-- Modal Liste des dépenses -->
+                <div class="modal fade" id="expensesListModal<?php echo $product['id']; ?>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header main-bg text-white">
+                                <h5 class="modal-title">
+                                    Liste des dépenses - <?php echo htmlspecialchars($product['name']); ?>
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered expenses-table" style="width:100%">
+                                        <thead class="main-bg text-white">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Description</th>
+                                                <th>Montant</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php 
+                                            $expenses = $financeManager->getProductExpenses($product['id']);
+                                            foreach ($expenses as $expense): 
+                                            ?>
+                                            <tr>
+                                                <td class="text-center"><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
+                                                <td><?php echo htmlspecialchars($expense['descrption']); ?></td>
+                                                <td class="text-end"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot class="secondary-bg text-white">
+                                            <tr>
+                                                <th colspan="2" class="text-end">Total</th>
+                                                <th class="text-end"><?php echo number_format($product['total_expenses'], 0, ',', ' '); ?> F</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </main>
         </div>
     </div>
@@ -244,8 +248,8 @@ $soldProducts = $productManager->getSoldProducts();
 
     <script>
         $(document).ready(function() {
-            // Initialisation de DataTables
-            var table = $('#productsTable').DataTable({
+            // Initialisation du tableau principal
+            $('#productsTable').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
                 },
@@ -253,26 +257,35 @@ $soldProducts = $productManager->getSoldProducts();
                      "<'row'<'col-sm-12'tr>>" +
                      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
                 order: [[0, 'desc']],
-                responsive: true,
                 pageLength: 25,
                 lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tous"]],
                 columnDefs: [
                     { orderable: true, targets: '_all' },
                     { searchable: false, targets: [0, 2, 3, 4, 5, 6, 7, 8] }
-                ],
-                drawCallback: function(settings) {
-                    $('.collapse').collapse('hide');
-                }
+                ]
             });
 
-            // Gérer les lignes de dépenses lors du tri et de la pagination
-            table.on('draw', function() {
-                $('.collapse').collapse('hide');
+            // Initialisation des tableaux de dépenses
+            $('.expenses-table').each(function() {
+                $(this).DataTable({
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
+                    },
+                    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                         "<'row'<'col-sm-12'tr>>" +
+                         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                    pageLength: 10,
+                    ordering: true,
+                    order: [[0, 'desc']], // Tri par date décroissante
+                    columnDefs: [
+                        { type: 'date', targets: 0 }
+                    ]
+                });
             });
 
-            // Réinitialiser les lignes extensibles lors de la recherche
-            $('.dataTables_filter input').on('keyup', function() {
-                $('.collapse').collapse('hide');
+            // Réinitialiser les DataTables des dépenses lors de la fermeture des modals
+            $('.modal').on('hidden.bs.modal', function() {
+                $(this).find('.expenses-table').DataTable().search('').draw();
             });
         });
     </script>
