@@ -3,7 +3,7 @@ require_once '../vendor/autoload.php';
 
 use Src\Connectdb;
 
-header('Content-Type: application/json');
+session_start();
 
 try {
     // Vérification des données requises
@@ -32,9 +32,8 @@ try {
         throw new Exception('Données invalides');
     }
 
-    // Types de dépenses autorisés
-    $allowedTypes = ['transport', 'stockage', 'marketing', 'autre'];
-    if (!in_array($type, $allowedTypes)) {
+    // Vérifier que le type est "products"
+    if ($type !== 'products') {
         throw new Exception('Type de dépense non valide');
     }
 
@@ -47,17 +46,14 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$product_id, $type, $cout, $description, $date]);
 
-    // Réponse de succès
-    echo json_encode([
-        'success' => true,
-        'message' => 'Dépense enregistrée avec succès'
-    ]);
+    // Message de succès et redirection
+    $_SESSION['success'] = 'Dépense enregistrée avec succès';
+    header('Location: index.php');
+    exit();
 
 } catch (Exception $e) {
-    // En cas d'erreur, renvoyer un message d'erreur
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
+    // En cas d'erreur, stocker le message et rediriger
+    $_SESSION['error'] = $e->getMessage();
+    header('Location: index.php');
+    exit();
 }

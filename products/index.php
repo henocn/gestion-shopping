@@ -102,51 +102,49 @@ $soldProducts = $productManager->getSoldProducts();
                                             </td>
                                             <td>
                                                 <button
-                                                    class="btn main-bg text-white btn-sm add-expense"
+                                                    class="btn main-bg text-white btn-sm"
                                                     data-bs-toggle="modal"
-                                                    data-bs-target="#expenseModal"
-                                                    data-product-id="<?php echo $product['id']; ?>"
-                                                    data-product-name="<?php echo htmlspecialchars($product['name']); ?>">
+                                                    data-bs-target="#expenseModal<?php echo $product['id']; ?>">
                                                     <i class="fas fa-plus-circle"></i> Dépense
                                                 </button>
                                             </td>
-
                                         </tr>
+
+                                        <!-- Modal pour chaque produit -->
+                                        <div class="modal fade" id="expenseModal<?php echo $product['id']; ?>" tabindex="-1" aria-labelledby="expenseModalLabel<?php echo $product['id']; ?>" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header main-bg text-white">
+                                                        <h5 class="modal-title" id="expenseModalLabel<?php echo $product['id']; ?>">
+                                                            Ajouter une dépense pour <?php echo htmlspecialchars($product['name']); ?>
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form action="save.php" method="POST">
+                                                            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                                            <input type="hidden" name="date" value="<?php echo date('Y-m-d H:i:s'); ?>">
+                                                            <input type="hidden" name="type" value="products">
+                                                            <div class="mb-3">
+                                                                <label for="cout<?php echo $product['id']; ?>" class="form-label">Montant de la dépense</label>
+                                                                <input type="number" class="form-control" id="cout<?php echo $product['id']; ?>" name="cout" step="0.01" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="description<?php echo $product['id']; ?>" class="form-label">Description</label>
+                                                                <textarea class="form-control" id="description<?php echo $product['id']; ?>" name="description" rows="3" required></textarea>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                                <button type="submit" class="btn main-bg text-white">Enregistrer</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal pour ajouter une dépense -->
-                <div class="modal fade" id="expenseModal" tabindex="-1" aria-labelledby="expenseModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="expenseModalLabel">Ajouter une dépense</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="expenseForm">
-                                    <input type="hidden" id="productId" name="product_id">
-                                    <input type="hidden" id="productName" name="productName">
-                                    <input type="hidden" id="type" name="type" value="products" required>
-                                    <div class="mb-3">
-                                        <label for="cout" class="form-label">Montant de la dépense</label>
-                                        <input type="number" class="form-control" id="cout" name="cout" step="0.01" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Description</label>
-                                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                                    </div>
-                                    <input type="hidden" name="date" value="<?php echo date('Y-m-d H:i:s'); ?>">
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                <button type="button" class="btn btn-primary" id="saveExpense">Enregistrer</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -170,48 +168,6 @@ $soldProducts = $productManager->getSoldProducts();
                     [1, 'desc']
                 ],
                 responsive: true
-            });
-
-            // Gestion du modal pour ajouter une dépense
-            $('.add-expense').on('click', function() {
-                const productId = $(this).data('product-id');
-                const productName = $(this).data('product-name');
-
-                $('#productId').val(productId);
-                $('#productName').val(productName);
-            });
-
-            // Gestion de la soumission du formulaire de dépense
-            $('#saveExpense').on('click', function() {
-                const formData = {
-                    product_id: $('#productId').val(),
-                    type: $('#type').val(),
-                    cout: $('#cout').val(),
-                    description: $('#description').val(),
-                    date: $('input[name="date"]').val()
-                };
-
-                if (!formData.type || !formData.cout || !formData.description) {
-                    alert('Veuillez remplir tous les champs obligatoires');
-                    return;
-                }
-
-                // Envoi des données au serveur (à implémenter)
-                $.ajax({
-                    url: 'save.php',
-                    method: 'POST',
-                    data: formData,
-                    success: function(response) {
-                        alert('Dépense enregistrée avec succès');
-                        $('#expenseModal').modal('hide');
-                        $('#expenseForm')[0].reset();
-                        // Recharger la page ou mettre à jour le tableau si nécessaire
-                        location.reload();
-                    },
-                    error: function() {
-                        alert('Erreur lors de l\'enregistrement de la dépense');
-                    }
-                });
             });
         });
     </script>
