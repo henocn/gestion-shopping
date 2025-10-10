@@ -169,7 +169,7 @@ $soldProducts = $productManager->getSoldProducts();
                 },
                 order: [
                     [1, 'desc']
-                ], // Tri par défaut sur la quantité vendue
+                ],
                 responsive: true
             });
 
@@ -197,7 +197,7 @@ $soldProducts = $productManager->getSoldProducts();
 
                 // Envoi des données au serveur (à implémenter)
                 $.ajax({
-                    url: '../api/add_expense.php', // À créer
+                    url: 'save.php',
                     method: 'POST',
                     data: formData,
                     success: function(response) {
