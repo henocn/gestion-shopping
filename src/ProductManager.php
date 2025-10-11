@@ -19,59 +19,6 @@ class ProductManager
     }
 
     /**
-     * Récupère un produit par son ID avec son stock et son coût.
-     */
-    public function find($id)
-    {
-        try {
-            $stmt = $this->pdo->prepare("
-                SELECT 
-                    p.*,
-                    ps.quantity,
-                    ps.low_stock_threshold,
-                    pcc.current_purchase_price,
-                    pcc.last_updated
-                FROM products p
-                LEFT JOIN product_stock ps ON p.id = ps.product_id
-                LEFT JOIN product_current_costs pcc ON p.id = pcc.product_id
-                WHERE p.id = ?
-            ");
-            $stmt->execute([$id]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("Erreur find product: " . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Récupère tous les produits avec leurs informations de stock.
-     */
-    public function findAll()
-    {
-        try {
-            $stmt = $this->pdo->query("
-                SELECT 
-                    p.id,
-                    p.name,
-                    p.price,
-                    p.image,
-                    ps.quantity,
-                    ps.low_stock_threshold,
-                    pcc.current_purchase_price
-                FROM products p
-                LEFT JOIN product_stock ps ON p.id = ps.product_id
-                LEFT JOIN product_current_costs pcc ON p.id = pcc.product_id
-                ORDER BY p.name ASC
-            ");
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("Erreur findAll products: " . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
      * Récupère les produits avec un stock bas.
      */
     public function getLowStockAlerts($limit = 10)
@@ -97,72 +44,86 @@ class ProductManager
         }
     }
 
+
+
     /**
-     * Met à jour le stock d'un produit.
+     * Récuperation de la liste des produits vendu (newstat = deliver) avec leur taux de benefice et le benefice total
+     * depuis la table orders
      */
-    public function updateStock($productId, $newQuantity)
+    public function getSoldProducts()
     {
         try {
             $stmt = $this->pdo->prepare("
-                UPDATE product_stock 
-                SET quantity = ?, last_updated = NOW() 
-                WHERE product_id = ?
-            ");
-            return $stmt->execute([$newQuantity, $productId]);
+            WITH product_expenses AS (
+                SELECT 
+                    product_id,
+                    COALESCE(SUM(cout), 0) as total_expenses
+                FROM depense 
+                WHERE type = 'products'
+                GROUP BY product_id
+            )
+            SELECT 
+                p.id,
+                p.name,
+                SUM(o.unit_price * o.quantity) AS cost_price,
+                SUM(o.total_price) AS total_selling_price,
+                SUM(o.quantity) AS total_sold,
+                COALESCE(pe.total_expenses, 0) as total_expenses,
+                ((SUM(o.total_price) - (SUM(o.unit_price * o.quantity) + COALESCE(pe.total_expenses, 0)))/SUM(o.quantity)) AS avg_profit_per_unit,
+                (SUM(o.total_price) - (SUM(o.unit_price * o.quantity) + COALESCE(pe.total_expenses, 0))) AS total_profit,
+                ROUND(((SUM(o.total_price) - (SUM(o.unit_price * o.quantity) + COALESCE(pe.total_expenses, 0))) / SUM(o.unit_price * o.quantity)) * 100, 2) AS rendement
+            FROM orders o
+            JOIN products p ON o.product_id = p.id
+            LEFT JOIN product_expenses pe ON p.id = pe.product_id
+            WHERE o.newstat = 'deliver'
+            GROUP BY p.id, p.name, pe.total_expenses
+            ORDER BY total_sold DESC
+        ");
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
-            error_log("Erreur updateStock: " . $e->getMessage());
-            return false;
+            error_log('Erreur getSoldProducts: ' . $e->getMessage());
+            return [];
         }
     }
 
     /**
-     * Récupère le niveau de stock actuel pour un produit.
+     * Récupère le montant total des achats
      */
-    public function getStockLevel($productId)
+    public function getTotalPurchaseAmount()
     {
         try {
-            $stmt = $this->pdo->prepare("SELECT quantity FROM product_stock WHERE product_id = ?");
-            $stmt->execute([$productId]);
-            return (int) $stmt->fetchColumn();
+            $stmt = $this->pdo->prepare("
+                SELECT SUM(unit_price * quantity) as total
+                FROM orders
+                WHERE newstat = 'deliver'
+            ");
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'] ?? 0;
         } catch (Exception $e) {
-            error_log("Erreur getStockLevel: " . $e->getMessage());
+            error_log("Erreur getTotalPurchaseAmount: " . $e->getMessage());
             return 0;
         }
     }
 
     /**
-     * Met à jour le coût d'achat d'un produit.
+     * Récupère le montant total des ventes
      */
-    public function updatePurchasePrice($productId, $newPrice)
+    public function getTotalSalesAmount()
     {
         try {
             $stmt = $this->pdo->prepare("
-                INSERT INTO product_current_costs (product_id, current_purchase_price, effective_date, last_updated)
-                VALUES (?, ?, CURDATE(), NOW())
-                ON DUPLICATE KEY UPDATE 
-                    current_purchase_price = VALUES(current_purchase_price),
-                    last_updated = NOW(),
-                    effective_date = VALUES(effective_date)
+                SELECT SUM(total_price) as total
+                FROM orders
+                WHERE newstat = 'deliver'
             ");
-            return $stmt->execute([$productId, $newPrice]);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'] ?? 0;
         } catch (Exception $e) {
-            error_log("Erreur updatePurchasePrice: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Récupère le coût d'achat d'un produit.
-     */
-    public function getPurchasePrice($productId)
-    {
-        try {
-            $stmt = $this->pdo->prepare("SELECT current_purchase_price FROM product_current_costs WHERE product_id = ?");
-            $stmt->execute([$productId]);
-            return (float) $stmt->fetchColumn();
-        } catch (Exception $e) {
-            error_log("Erreur getPurchasePrice: " . $e->getMessage());
-            return 0.0;
+            error_log("Erreur getTotalSalesAmount: " . $e->getMessage());
+            return 0;
         }
     }
 }

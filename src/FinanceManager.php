@@ -24,13 +24,13 @@ class FinanceManager
     /**
      * Enregistre une dépense liée à un produit (ex: frais de livraison).
      */
-    public function recordProductExpense($productId, $amount, $description, $date = null)
+    public function recordProductExpense($productId, $amount, $description)
     {
         try {
             $stmt = $this->pdo->prepare(
-                "INSERT INTO depense (type, product_id, cout, date, descrption) VALUES ('products', ?, ?, ?, ?)"
+                "INSERT INTO depense (type, product_id, cout, descrption) VALUES ('products', ?, ?, ?)"
             );
-            return $stmt->execute([$productId, $amount, $date ?? date('Y-m-d H:i:s'), $description]);
+            return $stmt->execute([$productId, $amount, $description]);
         } catch (Exception $e) {
             error_log("Erreur recordProductExpense: " . $e->getMessage());
             return false;
@@ -40,7 +40,7 @@ class FinanceManager
     /**
      * Récupère toutes les dépenses pour une période donnée.
      */
-    public function getExpenses($dateFrom, $dateTo)
+    public function getProductExpenses($product_id)
     {
         try {
             $stmt = $this->pdo->prepare("
@@ -54,10 +54,10 @@ class FinanceManager
                     p.name as product_name
                 FROM depense d
                 LEFT JOIN products p ON d.product_id = p.id
-                WHERE d.date BETWEEN ? AND ?
+                WHERE d.product_id = ?
                 ORDER BY d.date DESC
             ");
-            $stmt->execute([$dateFrom, $dateTo]);
+            $stmt->execute([$product_id]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log("Erreur getExpenses: " . $e->getMessage());
@@ -86,6 +86,25 @@ class FinanceManager
         } catch (Exception $e) {
             error_log("Erreur getExpensesSummary: " . $e->getMessage());
             return [];
+        }
+    }
+
+    /**
+     * Récupère le total des dépenses par type
+     */
+    public function getTotalExpensesByType($type)
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT COALESCE(SUM(cout), 0) as total
+                FROM depense
+                WHERE type = ?
+            ");
+            $stmt->execute([$type]);
+            return (float) $stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("Erreur getTotalExpensesByType: " . $e->getMessage());
+            return 0.0;
         }
     }
 

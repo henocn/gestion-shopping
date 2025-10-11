@@ -5,14 +5,9 @@ require_once 'src/Connectdb.php';
 use Src\ProductManager;
 use Src\FinanceManager;
 use Src\AnalyticsManager;
+use Src\Connectdb;
 
-// Initialiser la connexion à la base de données
-try {
-    $db = new \Src\Connectdb();
-    $pdo = $db->getConnection();
-} catch (\PDOException $e) {
-    die("Erreur de connexion à la base de données : " . $e->getMessage());
-}
+$cnx = Connectdb::getConnection();
 
 $dateFrom = $_GET['date_from'] ?? "";
 $dateTo = $_GET['date_to'] ?? "";
@@ -20,9 +15,9 @@ $dateTo = $_GET['date_to'] ?? "";
 
 
 // Instancier les nouveaux managers
-$productManager = new ProductManager($pdo);
-$financeManager = new FinanceManager($pdo);
-$analyticsManager = new AnalyticsManager($pdo);
+$productManager = new ProductManager($cnx);
+$financeManager = new FinanceManager($cnx);
+$analyticsManager = new AnalyticsManager($cnx);
 
 
 // Obtenir les statistiques avec les nouvelles classes
@@ -54,30 +49,7 @@ $lowStock = $productManager->getLowStockAlerts(10);
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 sidebar px-3 py-4 main-bg">
-                <div class="text-center mb-4">
-                    <h4 class="text-white">
-                        <i class="fas fa-chart-line"></i>
-                        LuxeManager
-                    </h4>
-                </div>
-
-                <div class="nav flex-column pt-3">
-                    <a class="nav-link active mb-4" href="index.php">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </a>
-                    <a class="nav-link mb-4" href="assistant/index.php">
-                        <i class="fas fa-users"></i>Assistantes
-                    </a>
-                    <a class="nav-link mb-4" href="finance/index.php">
-                        <i class="fas fa-coins"></i> Finance
-                    </a>
-                    <hr class="text-light">
-                    <div class="text-light small mb-2">
-                        Système de Gestion - Administration
-                    </div>
-                </div>
-            </nav>
+            <?php include 'includes/sidebar.php'; ?>
 
             <!-- Main content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 magenta-bg">
