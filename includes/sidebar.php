@@ -10,13 +10,13 @@
             <a class="nav-link mb-4" href="../index.php">
                   <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
-            <a class="nav-link mb-4" href="assistant/index.php">
+            <a class="nav-link mb-4" href="../assistant/index.php">
                   <i class="fas fa-users"></i>Assistantes
             </a>
-            <a class="nav-link mb-4 active" href="index.php">
+            <a class="nav-link mb-4 active" href="../products/index.php">
                   <i class="fas fa-box"></i> Iventaire
             </a>
-            <a class="nav-link mb-4" href="finance/index.php">
+            <a class="nav-link mb-4" href="../finance/index.php">
                   <i class="fas fa-coins"></i> Finance
             </a>
             <hr class="text-light">

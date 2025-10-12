@@ -220,6 +220,29 @@ class AnalyticsManager
     }
 
     /**
+     * @author tchamie 
+     * Je vais plutôt recuperer la liste simplement des assistantes actives
+     * et les afficher dans le tableau
+     * et pour chaque assistante, je vais recuperer les statistiques (fonction deja ecrite)
+     */
+
+    public function getActiveAssistants()
+    {
+        try {
+            $stmt = $this->pdo->query("
+                SELECT id, name, email
+                FROM users
+                WHERE role = 0 AND is_active = 1
+                ORDER BY name ASC
+            ");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Erreur getActiveAssistants: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Récupère les statistiques détaillées d'une assistante.
      */
     public function getAssistantStats($assistantId, $dateFrom, $dateTo)
@@ -246,22 +269,6 @@ class AnalyticsManager
         }
     }
 
-    /**
-     * Récupère la liste des assistantes actives.
-     */
-    public function getActiveAssistants()
-    {
-        try {
-            $stmt = $this->pdo->query("
-                SELECT id, name, email
-                FROM users
-                WHERE role = 0 AND is_active = 1
-                ORDER BY name ASC
-            ");
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            error_log("Erreur getActiveAssistants: " . $e->getMessage());
-            return [];
-        }
-    }
+    
+    
 }
