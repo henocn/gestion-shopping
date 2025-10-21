@@ -1,19 +1,14 @@
 <?php
 session_start();
 require_once '../vendor/autoload.php';
-require_once '../src/Connectdb.php';
+
 
 use Src\Connectdb;
 use Src\FinanceManager;
 
-try {
-    $database = new Connectdb();
-    $pdo = $database->getConnection();
-} catch (\PDOException $e) {
-    die("Erreur de connexion à la base de données : " . $e->getMessage());
-}
+$cnx = Connectdb::getConnection();
 
-$financeManager = new FinanceManager($pdo);
+$financeManager = new FinanceManager($cnx);
 
 if (!isset($_POST['action'])) {
     $_SESSION['error'] = 'Action non définie';

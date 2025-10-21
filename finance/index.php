@@ -1,23 +1,18 @@
 <?php
 session_start();
 require_once '../vendor/autoload.php';
-require_once '../src/Connectdb.php';
+
 
 use Src\Connectdb;
 use Src\FinanceManager;
 use Src\ProductManager;
 use Src\AnalyticsManager;
 
-try {
-    $database = new Connectdb();
-    $pdo = $database->getConnection();
-} catch (\PDOException $e) {
-    die("Erreur de connexion : " . $e->getMessage());
-}
+$cnx = Connectdb::getConnection();
 
-$financeManager = new FinanceManager($pdo);
-$productManager = new ProductManager($pdo);
-$analyticsManager = new AnalyticsManager($pdo);
+$financeManager = new FinanceManager($cnx);
+$productManager = new ProductManager($cnx);
+$analyticsManager = new AnalyticsManager($cnx);
 
 // Messages
 $successMessage = $_SESSION['success'] ?? null;
