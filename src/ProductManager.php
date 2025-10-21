@@ -126,4 +126,18 @@ class ProductManager
             return 0;
         }
     }
+
+    /**
+     * Récupère la liste complète des produits pour les sélecteurs.
+     */
+    public function getAllProducts()
+    {
+        try {
+            $stmt = $this->pdo->query("SELECT id, name FROM products ORDER BY name ASC");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Erreur getAllProducts: ' . $e->getMessage());
+            return [];
+        }
+    }
 }

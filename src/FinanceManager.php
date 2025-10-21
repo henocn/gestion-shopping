@@ -22,19 +22,39 @@ class FinanceManager
     // --- Gestion des Dépenses ---
 
     /**
+     * Crée une dépense générique.
+     */
+    public function createExpense($type, $amount, $description = null, $productId = null, $managerId = null, $date = null)
+    {
+        $allowedTypes = ['products', 'users', 'campagn', 'others'];
+        if (!in_array($type, $allowedTypes, true)) {
+            throw new Exception('Type de dépense invalide');
+        }
+
+        if ($amount <= 0) {
+            throw new Exception('Montant de dépense invalide');
+        }
+
+        $dateValue = $date ?: date('Y-m-d H:i:s');
+
+        try {
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO depense (type, product_id, manager_id, cout, descrption, date) 
+                 VALUES (?, ?, ?, ?, ?, ?)"
+            );
+            return $stmt->execute([$type, $productId, $managerId, $amount, $description, $dateValue]);
+        } catch (Exception $e) {
+            error_log("Erreur createExpense: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Enregistre une dépense liée à un produit (ex: frais de livraison).
      */
     public function recordProductExpense($productId, $amount, $description)
     {
-        try {
-            $stmt = $this->pdo->prepare(
-                "INSERT INTO depense (type, product_id, cout, descrption) VALUES ('products', ?, ?, ?)"
-            );
-            return $stmt->execute([$productId, $amount, $description]);
-        } catch (Exception $e) {
-            error_log("Erreur recordProductExpense: " . $e->getMessage());
-            return false;
-        }
+        return $this->createExpense('products', $amount, $description, $productId);
     }
 
     /**
@@ -124,6 +144,91 @@ class FinanceManager
         } catch (Exception $e) {
             error_log("Erreur getTotalExpenses: " . $e->getMessage());
             return 0.0;
+        }
+    }
+
+    /**
+     * Retourne la liste des types de dépenses disponibles.
+     */
+    public function getExpenseTypes()
+    {
+        try {
+            $stmt = $this->pdo->query("SELECT DISTINCT type FROM depense ORDER BY type ASC");
+            return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        } catch (Exception $e) {
+            error_log("Erreur getExpenseTypes: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Compte le nombre total de dépenses pour la période/type fourni.
+     */
+    public function countExpenses($dateFrom, $dateTo, $type = null)
+    {
+        try {
+            $sql = "SELECT COUNT(*) FROM depense WHERE date BETWEEN :date_from AND :date_to";
+            if (!empty($type)) {
+                $sql .= " AND type = :type";
+            }
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':date_from', $dateFrom);
+            $stmt->bindValue(':date_to', $dateTo);
+            if (!empty($type)) {
+                $stmt->bindValue(':type', $type);
+            }
+
+            $stmt->execute();
+            return (int) $stmt->fetchColumn();
+        } catch (Exception $e) {
+            error_log("Erreur countExpenses: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Récupère la liste détaillée des dépenses avec pagination.
+     */
+    public function getExpenses($dateFrom, $dateTo, $type = null, $limit = 25, $offset = 0)
+    {
+        try {
+            $sql = "
+                SELECT
+                    d.id,
+                    d.type,
+                    d.product_id,
+                    d.manager_id,
+                    d.cout,
+                    d.date,
+                    d.descrption AS description,
+                    p.name AS product_name,
+                    u.name AS manager_name
+                FROM depense d
+                LEFT JOIN products p ON d.product_id = p.id
+                LEFT JOIN users u ON d.manager_id = u.id
+                WHERE d.date BETWEEN :date_from AND :date_to";
+
+            if (!empty($type)) {
+                $sql .= " AND d.type = :type";
+            }
+
+            $sql .= " ORDER BY d.date DESC, d.id DESC LIMIT :limit OFFSET :offset";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindValue(':date_from', $dateFrom);
+            $stmt->bindValue(':date_to', $dateTo);
+            if (!empty($type)) {
+                $stmt->bindValue(':type', $type);
+            }
+            $stmt->bindValue(':limit', max(1, (int) $limit), PDO::PARAM_INT);
+            $stmt->bindValue(':offset', max(0, (int) $offset), PDO::PARAM_INT);
+
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Erreur getExpenses: " . $e->getMessage());
+            return [];
         }
     }
 

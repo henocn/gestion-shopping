@@ -14,7 +14,6 @@ if (!isset($_POST['valider'])) {
     header('Location: index.php?error=401');
     exit;
 }
-echo("debug");
 
 $action = $_POST['valider'];
 
