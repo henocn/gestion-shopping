@@ -7,14 +7,14 @@ namespace Composer\Autoload;
 class ComposerStaticInitb1180a241189155c0212212144026e37
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        's' => 
         array (
-            'Src\\' => 4,
+            'src\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Src\\' => 
+        'src\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
@@ -22,9 +22,6 @@ class ComposerStaticInitb1180a241189155c0212212144026e37
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Src\\AnalyticsManager' => __DIR__ . '/../..' . '/src/AnalyticsManager.php',
-        'Src\\FinanceManager' => __DIR__ . '/../..' . '/src/FinanceManager.php',
-        'Src\\ProductManager' => __DIR__ . '/../..' . '/src/ProductManager.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

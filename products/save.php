@@ -2,10 +2,10 @@
 session_start();
 require_once '../vendor/autoload.php';
 
-use Src\Connectdb;
-use Src\FinanceManager;
+use src\Connectbd;
+use src\FinanceManager;
 
-$db = new Connectdb();
+$db = new Connectbd();
 $pdo = $db->getConnection();
 $financeManager = new FinanceManager($pdo);
 

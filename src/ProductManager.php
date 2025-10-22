@@ -1,6 +1,6 @@
 <?php
 
-namespace Src;
+namespace src;
 
 use PDO;
 use Exception;

@@ -1,12 +1,11 @@
 <?php
 require_once '../vendor/autoload.php';
-require_once '../src/Connectdb.php';
 
-use Src\ProductManager;
-use Src\AnalyticsManager;
-use Src\Connectdb;
+use src\ProductManager;
+use src\AnalyticsManager;
+use src\Connectbd;
 
-$cnx = Connectdb::getConnection();
+$cnx = Connectbd::getConnection();
 
 $assistantId = $_GET['id'] ?? null;
 

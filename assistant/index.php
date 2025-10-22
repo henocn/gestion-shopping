@@ -1,11 +1,11 @@
 <?php
+require_once '../security/auth_check.php';
 require_once '../vendor/autoload.php';
-require_once '../src/Connectdb.php';
 
-use Src\Connectdb;
-use Src\AnalyticsManager;
+use src\Connectbd;
+use src\AnalyticsManager;
 
-$cnx = Connectdb::getConnection();
+$cnx = Connectbd::getConnection();
 
 $analyticsManager = new AnalyticsManager($cnx);
 

@@ -1,26 +1,23 @@
 <?php
+require_once 'security/auth_check.php';
 require_once 'vendor/autoload.php';
-require_once 'src/Connectdb.php';
 
-use Src\ProductManager;
-use Src\FinanceManager;
-use Src\AnalyticsManager;
-use Src\Connectdb;
+use src\ProductManager;
+use src\FinanceManager;
+use src\AnalyticsManager;
+use src\Connectbd;
 
-$cnx = Connectdb::getConnection();
+$cnx = Connectbd::getConnection();
 
 $dateFrom = $_GET['date_from'] ?? "";
 $dateTo = $_GET['date_to'] ?? "";
 
 
-
-// Instancier les nouveaux managers
 $productManager = new ProductManager($cnx);
 $financeManager = new FinanceManager($cnx);
 $analyticsManager = new AnalyticsManager($cnx);
 
 
-// Obtenir les statistiques avec les nouvelles classes
 $globalStats = $analyticsManager->getGlobalSalesStats($dateFrom, $dateTo);
 $topProducts = $analyticsManager->getTopSellingProducts($dateFrom, $dateTo);
 $salesEvolution = $analyticsManager->getSalesEvolution(30);
@@ -69,6 +66,10 @@ $lowStock = $productManager->getLowStockAlerts(10);
                     </a>
                     <a class="nav-link mb-4" href="./finance/index.php">
                         <i class="fas fa-coins"></i> Finance
+                    </a>
+                    <hr class="text-light">
+                    <a class="nav-link text-danger" href="./security/logout.php">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
                     </a>
                     <hr class="text-light">
                     <div class="text-light small mb-2">

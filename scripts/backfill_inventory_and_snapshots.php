@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/../src/Connectdb.php';
-use src\Connectdb;
+require_once '../vendor/autoload.php';
 
-$pdo = Connectdb::getConnection();
+use src\Connectbd;
+
+$pdo = Connectbd::getConnection();
 
 function logln($m){ echo date('H:i:s') . ' ' . $m . PHP_EOL; }
 

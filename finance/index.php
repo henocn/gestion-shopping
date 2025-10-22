@@ -1,14 +1,13 @@
 <?php
-session_start();
+require_once '../security/auth_check.php';
 require_once '../vendor/autoload.php';
 
-
-use Src\Connectdb;
 use Src\FinanceManager;
 use Src\ProductManager;
 use Src\AnalyticsManager;
+use src\Connectbd;
 
-$cnx = Connectdb::getConnection();
+$cnx = Connectbd::getConnection();
 
 $financeManager = new FinanceManager($cnx);
 $productManager = new ProductManager($cnx);

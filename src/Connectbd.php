@@ -1,11 +1,11 @@
 <?php
 
-namespace Src;
+namespace src;
 
 use PDO;
 use Exception;
 
-class Connectdb
+class Connectbd
 {
 
     private static function connect()
