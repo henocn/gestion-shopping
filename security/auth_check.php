@@ -18,7 +18,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in'])) {
 // Vérifier que le rôle est (admin)
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] != 1) {
     $_SESSION['error'] = 'Accès refusé. Vous n\'avez pas les permissions nécessaires.';
-    header('Location: local.bernard.shop/management/');
+    header('Location: ../security/logout.php');
     exit();
 }
 

@@ -2,9 +2,9 @@
 require_once '../security/auth_check.php';
 require_once '../vendor/autoload.php';
 
-use Src\FinanceManager;
-use Src\ProductManager;
-use Src\AnalyticsManager;
+use src\FinanceManager;
+use src\ProductManager;
+use src\AnalyticsManager;
 use src\Connectbd;
 
 $cnx = Connectbd::getConnection();
@@ -114,6 +114,10 @@ $periodLabel = date('d/m/Y', strtotime($dateFrom)) . ' → ' . date('d/m/Y', str
                     </a>
                     <a class="nav-link mb-4 active" href="index.php">
                         <i class="fas fa-coins"></i> Finance
+                    </a>
+                     <hr class="text-light">
+                    <a class="nav-link text-danger" href="./security/logout.php">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
                     </a>
                     <hr class="text-light">
                     <div class="text-light small mb-2">Système de Gestion - Administration</div>

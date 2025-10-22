@@ -59,6 +59,10 @@ $assistantsRanking = $analyticsManager->getAssistantsRanking($dateFrom, $dateTo)
                     <a class="nav-link mb-4" href="../finance/index.php">
                         <i class="fas fa-coins"></i> Finance
                     </a>
+                     <hr class="text-light">
+                    <a class="nav-link text-danger" href="./security/logout.php">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
                     <hr class="text-light">
                     <div class="text-light small mb-2">
                         Système de Gestion - Administration
