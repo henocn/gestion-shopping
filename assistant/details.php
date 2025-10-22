@@ -1,4 +1,5 @@
 <?php
+require_once '../security/auth_check.php';
 require_once '../vendor/autoload.php';
 
 use src\ProductManager;
