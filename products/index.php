@@ -258,7 +258,7 @@ $soldProducts = $productManager->getSoldProducts();
                                                 ?>
                                                     <tr>
                                                         <td class="text-center"><?php echo date('d/m/Y H:i', strtotime($expense['date'])); ?></td>
-                                                        <td><?php echo htmlspecialchars($expense['descrption']); ?></td>
+                                                        <td><?php echo htmlspecialchars($expense['description']); ?></td>
                                                         <td class="text-end"><?php echo number_format($expense['cout'], 0, ',', ' '); ?> F</td>
                                                     </tr>
                                                 <?php endforeach; ?>

@@ -69,10 +69,10 @@ $averageExpense = $totalExpensesCount > 0 ? $totalExpenses / $totalExpensesCount
 
 // Dépenses par type
 $expensesByType = [
-    'products' => $financeManager->getTotalExpensesByType('products'),
-    'users' => $financeManager->getTotalExpensesByType('users'),
-    'campagn' => $financeManager->getTotalExpensesByType('campagn'),
-    'others' => $financeManager->getTotalExpensesByType('others')
+    'products' => $financeManager->getTotalExpensesByType('products', $dateFrom, $dateTo),
+    'users' => $financeManager->getTotalExpensesByType('users', $dateFrom, $dateTo),
+    'campagn' => $financeManager->getTotalExpensesByType('campagn', $dateFrom, $dateTo),
+    'others' => $financeManager->getTotalExpensesByType('others', $dateFrom, $dateTo)
 ];
 
 // Données pour les formulaires
